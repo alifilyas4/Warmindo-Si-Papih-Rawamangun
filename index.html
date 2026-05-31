@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warmindo Si Papih Rawamangun - POS Premium v2</title>
+    <title>Warmindo Si Papih Rawamangun - POS Premium v3.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -22,7 +22,7 @@
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent opacity-50"></div>
         <div class="bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-md border border-white/20 relative z-10">
             <div class="text-center mb-8">
-                <span class="bg-red-100 text-red-600 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Sistem POS Real-time v2</span>
+                <span class="bg-red-100 text-red-600 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Sistem POS Real-time v3.1</span>
                 <h2 class="text-3xl font-extrabold text-slate-900 mt-3 tracking-tight">Si Papih Rawamangun</h2>
                 <p class="text-sm text-slate-500 mt-1">Masuk dengan akun untuk mencatat absensi kehadiran</p>
             </div>
@@ -68,11 +68,13 @@
         </header>
 
         <nav class="bg-white border-b border-slate-200 flex overflow-x-auto shadow-sm sticky top-0 z-40 custom-scroll">
-            <button onclick="switchMenu('transaksi')" id="btn-transaksi" class="nav-btn flex-1 py-4 px-6 text-center border-b-2 border-red-600 text-red-600 font-bold whitespace-nowrap text-sm">Kasir & Meja</button>
-            <button onclick="switchMenu('riwayat')" id="btn-riwayat" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap text-sm hover:text-slate-800">Riwayat Transaksi</button>
-            <button onclick="switchMenu('konsumsi')" id="btn-konsumsi" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap text-sm hover:text-slate-800">Konsumsi Karyawan</button>
-            <button onclick="switchMenu('stock')" id="btn-stock" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap admin-only hidden text-sm hover:text-slate-800">Manajemen Stok / Shift</button>
-            <button onclick="switchMenu('laporan')" id="btn-laporan" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap admin-only hidden text-sm hover:text-slate-800">Laporan & Absensi</button>
+            <button onclick="switchMenu('transaksi')" id="btn-transaksi" class="nav-btn flex-1 py-4 px-6 text-center border-b-2 border-red-600 text-red-600 font-bold whitespace-nowrap text-sm">1. Transaksi</button>
+            <button onclick="switchMenu('riwayat')" id="btn-riwayat" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap text-sm hover:text-slate-800">2. Riwayat Transaksi</button>
+            <button onclick="switchMenu('konsumsi')" id="btn-konsumsi" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap text-sm hover:text-slate-800">3. Konsumsi Karyawan</button>
+            <button onclick="switchMenu('operasional')" id="btn-operasional" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap text-sm hover:text-slate-800">4. Biaya Operasional</button>
+            <button onclick="switchMenu('stock')" id="btn-stock" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap admin-only hidden text-sm hover:text-slate-800">5. Manajemen Stock</button>
+            <button onclick="switchMenu('laporan')" id="btn-laporan" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap admin-only hidden text-sm hover:text-slate-800">6. Laporan dan Absensi</button>
+            <button onclick="switchMenu('opname')" id="btn-opname" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap admin-only hidden text-sm hover:text-slate-800">7. Stock Opname dan Rekap</button>
         </nav>
 
         <main class="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
@@ -108,17 +110,125 @@
                 </div>
             </section>
 
+            <section id="menu-konsumsi" class="menu-content hidden space-y-6">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase">Nama Slot Staff 1</label>
+                        <input type="text" id="cfg-nama-k1" value="Karyawan 1" onchange="updateStaffNames()" class="w-full mt-1 p-2 border rounded-xl text-sm bg-slate-50">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase">Nama Slot Staff 2</label>
+                        <input type="text" id="cfg-nama-k2" value="Karyawan 2" onchange="updateStaffNames()" class="w-full mt-1 p-2 border rounded-xl text-sm bg-slate-50">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div id="card-k1" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-lg text-slate-800 label-name-k1">Karyawan 1</h4>
+                        <div class="w-full bg-slate-100 h-3 rounded-full mt-3 overflow-hidden">
+                            <div id="bar-k1" class="bg-purple-600 h-full" style="width: 0%"></div>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">Pemakaian: <span id="k1-used" class="font-bold">Rp 0</span> / Rp 150.000</p>
+                    </div>
+                    <div id="card-k2" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-lg text-slate-800 label-name-k2">Karyawan 2</h4>
+                        <div class="w-full bg-slate-100 h-3 rounded-full mt-3 overflow-hidden">
+                            <div id="bar-k2" class="bg-indigo-600 h-full" style="width: 0%"></div>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">Pemakaian: <span id="k2-used" class="font-bold">Rp 0</span> / Rp 150.000</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-900 mb-4">Form Pencatatan Makan Operasional</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <select id="konsumsi-user" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm">
+                                <option value="Karyawan 1" id="opt-k1">Karyawan 1</option>
+                                <option value="Karyawan 2" id="opt-k2">Karyawan 2</option>
+                            </select>
+                        </div>
+                        <div><input type="text" id="konsumsi-item" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm" placeholder="Contoh: Nasi Goreng + Es Teh"></div>
+                        <div><input type="number" id="konsumsi-harga" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm" placeholder="Total Biaya"></div>
+                    </div>
+                    <button onclick="saveKonsumsiKaryawan()" class="mt-5 bg-slate-950 text-white font-bold px-6 py-2.5 rounded-xl text-sm">Input Jatah Makan</button>
+                </div>
+            </section>
+
+            <section id="menu-operasional" class="menu-content hidden space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Manajemen Biaya Operasional Toko</h2>
+                    <p class="text-xs text-slate-500">Mencatat pengeluaran berkala seperti pembelian Gas, Galon, Air, Sampah, PAM, atau Pembelian Sayur.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-900 mb-4 text-sm uppercase tracking-wider">Input Pengeluaran Baru</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase">Nama / Jenis Item</label>
+                            <input type="text" id="op-item-name" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-amber-500" placeholder="Contoh: Gas LPG 3Kg, Air Galon">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase">Total Nominal Biaya (Rp)</label>
+                            <input type="number" id="op-item-cost" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-amber-500" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase">Tanggal Pengeluaran</label>
+                            <input type="date" id="op-item-date" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-amber-500">
+                        </div>
+                    </div>
+                    <button onclick="saveOperasionalItem()" class="mt-5 bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition shadow-sm">Simpan Biaya Operasional</button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-amber-500">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Pengeluaran (Sesuai Tanggal Filter)</p>
+                        <h3 class="text-xl font-black text-slate-900 mt-1" id="op-total-daily-display">Rp 0</h3>
+                    </div>
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-950 p-5 rounded-2xl shadow-sm text-white">
+                        <p class="text-[10px] font-bold opacity-70 uppercase tracking-wider">Total Pengeluaran (Sesuai Bulan Filter)</p>
+                        <h3 class="text-xl font-black mt-1 text-amber-400" id="op-total-monthly-display">Rp 0</h3>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-wrap justify-between items-center gap-4">
+                        <h3 class="font-bold text-slate-900 text-sm">Log Historis Pengeluaran</h3>
+                        <div class="flex gap-2">
+                            <input type="date" id="op-filter-date" onchange="loadOperasionalData()" class="p-2 border rounded-xl text-xs bg-white">
+                            <input type="month" id="op-filter-month" onchange="loadOperasionalData()" class="p-2 border rounded-xl text-xs bg-white">
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-slate-100/70 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                                    <th class="p-4">Tanggal</th>
+                                    <th class="p-4">Shift Catat</th>
+                                    <th class="p-4">Nama Pengeluaran / Deskripsi</th>
+                                    <th class="p-4 text-right">Nominal Biaya</th>
+                                    <th class="p-4 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="operasional-table-body" class="divide-y divide-slate-100 text-sm text-slate-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
             <section id="menu-stock" class="menu-content hidden space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-bold text-slate-900 text-base" id="stock-form-title">Tambah / Modifikasi Bahan & Produk</h3>
                         <span class="text-xs font-bold bg-amber-100 text-amber-800 px-3 py-1 rounded-full" id="stock-shift-badge">Aliran Data: Shift --</span>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+                    <div class="grid grid-cols-1 sm:grid-cols-5 gap-4 items-end">
                         <input type="hidden" id="stock-id">
                         <div>
                             <label class="block text-xs font-bold text-slate-600 uppercase">Nama Produk/Bahan</label>
-                            <input type="text" id="stock-name" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-amber-500" placeholder="Contoh: Indomie, Telor, Kornet">
+                            <input type="text" id="stock-name" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-amber-500" placeholder="Contoh: Indomie, Telor">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase">Kategori</label>
+                            <select id="stock-kategori" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-amber-500">
+                                <option value="Utama">Menu Utama</option>
+                                <option value="Topping">Topping / Tambahan</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-600 uppercase">Harga Modal (Rp)</label>
@@ -180,7 +290,7 @@
                     <button onclick="loadDetailedReportAndAbsensi()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition">Terapkan Audit</button>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-5 gap-4">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Omset Kotor</p>
                         <h3 class="text-xl font-black text-slate-900 mt-1" id="report-pemasukan">Rp 0</h3>
@@ -193,17 +303,19 @@
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dana Makan Karyawan</p>
                         <h3 class="text-xl font-black text-amber-600 mt-1" id="report-total-konsumsi">Rp 0</h3>
                     </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Biaya Operasional</p>
+                        <h3 class="text-xl font-black text-red-500 mt-1" id="report-total-operasional">Rp 0</h3>
+                    </div>
                     <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-5 rounded-2xl shadow-sm">
-                        <p class="text-[10px] font-bold opacity-80 uppercase tracking-wider">Keuntungan Bersih Bersih</p>
+                        <p class="text-[10px] font-bold opacity-80 uppercase tracking-wider">Keuntungan Bersih</p>
                         <h3 class="text-xl font-black mt-1" id="report-profit">Rp 0</h3>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 md:col-span-1 flex flex-col">
-                        <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-3 flex items-center gap-2 text-red-600">
-                            ⏱️ Log Absensi & Jam Masuk
-                        </h4>
+                        <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-3 text-red-600">⏱️ Log Absensi & Jam Masuk</h4>
                         <div class="flex-1 overflow-y-auto max-h-60 custom-scroll border border-slate-100 rounded-xl">
                             <ul id="absensi-log-list" class="divide-y text-xs text-slate-700 p-2 space-y-2"></ul>
                         </div>
@@ -219,44 +331,69 @@
                 </div>
             </section>
 
-            <section id="menu-konsumsi" class="menu-content hidden space-y-6">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                    <h4 class="font-bold text-sm uppercase text-slate-700 tracking-wider mb-3">Manajemen Identitas Nama Staff</h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div><input type="text" id="cfg-nama-k1" value="Karyawan 1" onchange="updateStaffNames()" class="w-full p-2 border rounded-xl text-sm bg-slate-50"></div>
-                        <div><input type="text" id="cfg-nama-k2" value="Karyawan 2" onchange="updateStaffNames()" class="w-full p-2 border rounded-xl text-sm bg-slate-50"></div>
+            <section id="menu-opname" class="menu-content hidden space-y-6">
+                <div class="flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Stock Opname & Rekapitulasi Berkala</h2>
+                        <p class="text-xs text-slate-500">Menganalisis pergerakan mutasi barang dan laporan performa keuangan harian atau bulanan.</p>
                     </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div id="card-k1" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <h4 class="font-bold text-lg text-slate-800 label-name-k1">Karyawan 1</h4>
-                        <div class="w-full bg-slate-100 h-3 rounded-full mt-3 overflow-hidden">
-                            <div id="bar-k1" class="bg-purple-600 h-full" style="width: 0%"></div>
+                    <div class="bg-white p-3 rounded-2xl shadow-sm border flex items-center gap-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase">Filter Hari</label>
+                            <input type="date" id="opname-filter-date" onchange="runStockOpnameAudit()" class="p-1.5 border rounded-lg text-xs font-semibold">
                         </div>
-                        <p class="text-xs text-slate-500 mt-2">Pemakaian: <span id="k1-used" class="font-bold">Rp 0</span> / Rp 150.000</p>
-                    </div>
-                    <div id="card-k2" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <h4 class="font-bold text-lg text-slate-800 label-name-k2">Karyawan 2</h4>
-                        <div class="w-full bg-slate-100 h-3 rounded-full mt-3 overflow-hidden">
-                            <div id="bar-k2" class="bg-indigo-600 h-full" style="width: 0%"></div>
+                        <div class="border-l pl-3">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase">Filter Bulan</label>
+                            <input type="month" id="opname-filter-month" onchange="runStockOpnameAudit()" class="p-1.5 border rounded-lg text-xs font-semibold">
                         </div>
-                        <p class="text-xs text-slate-500 mt-2">Pemakaian: <span id="k2-used" class="font-bold">Rp 0</span> / Rp 150.000</p>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 class="font-bold text-slate-900 mb-4">Form Pencatatan Makan Operasional</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                            <select id="konsumsi-user" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm">
-                                <option value="Karyawan 1" id="opt-k1">Karyawan 1</option>
-                                <option value="Karyawan 2" id="opt-k2">Karyawan 2</option>
-                            </select>
-                        </div>
-                        <div><input type="text" id="konsumsi-item" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm" placeholder="Contoh: Nasi Goreng + Es Teh"></div>
-                        <div><input type="number" id="konsumsi-harga" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm" placeholder="Total Biaya"></div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Total Omset</p>
+                        <h4 class="text-sm font-black text-slate-900 mt-1" id="opname-omset">Rp 0</h4>
                     </div>
-                    <button onclick="saveKonsumsiKaryawan()" class="mt-5 bg-slate-950 text-white font-bold px-6 py-2.5 rounded-xl text-sm">Input Jatah Makan</button>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Total HPP (Modal)</p>
+                        <h4 class="text-sm font-black text-slate-500 mt-1" id="opname-hpp">Rp 0</h4>
+                    </div>
+                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                        <p class="text-[10px] font-bold text-emerald-700 uppercase">Untung Kotor</p>
+                        <h4 class="text-sm font-black text-emerald-700 mt-1" id="opname-kotor">Rp 0</h4>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Biaya Operasional</p>
+                        <h4 class="text-sm font-black text-red-500 mt-1" id="opname-operasional">Rp 0</h4>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Makan Karyawan</p>
+                        <h4 class="text-sm font-black text-amber-600 mt-1" id="opname-konsumsi">Rp 0</h4>
+                    </div>
+                    <div class="bg-slate-900 p-4 rounded-xl text-white">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Untung Bersih</p>
+                        <h4 class="text-sm font-black text-amber-400 mt-1" id="opname-bersih">Rp 0</h4>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+                        <h3 class="font-bold text-slate-900 text-sm">Mutasi Aliran Barang (Stock In / Out / Current)</h3>
+                    </div>
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-slate-100/70 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                                    <th class="p-4">Nama Produk / Bahan</th>
+                                    <th class="p-4 text-center">Stok Awal Estimasi</th>
+                                    <th class="p-4 text-center text-emerald-600">Total Masuk (Stock In)</th>
+                                    <th class="p-4 text-center text-red-600">Total Keluar Terjual (Stock Out)</th>
+                                    <th class="p-4 text-center">Stok Riil Saat Ini</th>
+                                </tr>
+                            </thead>
+                            <tbody id="opname-table-body" class="divide-y divide-slate-100 text-sm text-slate-700"></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </main>
@@ -321,10 +458,9 @@
         const db = firebase.firestore();
 
         let currentUser = null, currentRole = null, currentShift = null, selectedTable = null;
-        let activeBillItems = [], globalStocks = [], staffLimits = { k1: 0, k2: 0 };
+        let activeBillItems = [], globalStocks = [];
         let namaKaryawan1 = "Karyawan 1", namaKaryawan2 = "Karyawan 2";
 
-        // Realtime Jam Digital
         setInterval(() => {
             const now = new Date();
             document.getElementById('digital-clock').innerText = now.toTimeString().split(' ')[0];
@@ -337,34 +473,20 @@
             return "Luar Shift";
         }
 
-        // DATABASE USER (Sudah Diperbaiki Koma & Ditambah Fitur Blokir)
         const userDatabase = {
-            "admin": { pin: "1111", role: "Admin", isBlocked: false },
-            "saipul": { pin: "5678", role: "Karyawan", isBlocked: false },
-            "karyawan": { pin: "9876", role: "Karyawan", isBlocked: false },
-            "anton": { pin: "2468", role: "Karyawan", isBlocked: false }, // Tambah Akun Karyawan Baru
-            "ex_staff": { pin: "0000", role: "Karyawan", isBlocked: true } // Contoh Akun yang Diblokir
+            "admin": { pin: "1111", role: "Admin" },
+            "saipul": { pin: "5678", role: "Karyawan" },
+            "karyawan": { pin: "9876", role: "Karyawan" },
+            "anton": { pin: "2468", role: "Karyawan" }
         };
 
-        // LOGIN + LOG ABSENSI OTOMATIS
         function handleLogin() {
             const username = document.getElementById('login-username').value.trim().toLowerCase();
             const pin = document.getElementById('login-pin').value.trim();
 
             if (userDatabase[username]) {
-                // Cek status blokir terlebih dahulu
-                if (userDatabase[username].isBlocked) {
-                    alert('Gagal masuk! Akun Anda telah DIBLOKIR oleh Admin.');
-                    return;
-                }
-
-                // Cek Validitas PIN
                 if (userDatabase[username].pin === pin) {
-                    currentUser = username; 
-                    currentRole = userDatabase[username].role; 
-                    currentShift = determineShift();
-                    
-                    // Eksekusi Log Absensi Real-time
+                    currentUser = username; currentRole = userDatabase[username].role; currentShift = determineShift();
                     recordAbsensiKehadiran();
 
                     document.getElementById('user-display').innerText = username.toUpperCase();
@@ -382,24 +504,15 @@
                     document.getElementById('main-dashboard').classList.remove('hidden');
                     switchMenu('transaksi');
                     initSystem();
-                } else {
-                    alert('PIN Keamanan Anda Salah!');
-                }
-            } else {
-                alert('Username tidak ditemukan!');
-            }
+                } else { alert('PIN Keamanan Anda Salah!'); }
+            } else { alert('Username tidak ditemukan!'); }
         }
 
         function recordAbsensiKehadiran() {
             const now = new Date();
-            const timeStr = now.toTimeString().split(' ')[0];
-            const dateStr = now.toISOString().split('T')[0];
             db.collection("absensi_karyawan").add({
-                nama: currentUser,
-                role: currentRole,
-                shift: currentShift,
-                jamMasuk: timeStr,
-                tanggal: dateStr,
+                nama: currentUser, role: currentRole, shift: currentShift,
+                jamMasuk: now.toTimeString().split(' ')[0], tanggal: now.toISOString().split('T')[0],
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
         }
@@ -410,8 +523,9 @@
         }
 
         function switchMenu(menuId) {
-            if (currentRole === 'Karyawan' && (menuId === 'stock' || menuId === 'laporan')) {
-                alert('Akses Terbatas! Menu ini hanya untuk Akun Admin.'); return;
+            // PROTEKSI TINGKAT TINGGI: Jika akun Karyawan memaksa membuka menu admin lewat konsol/inspeksi
+            if (currentRole === 'Karyawan' && (menuId === 'stock' || menuId === 'laporan' || menuId === 'opname')) {
+                alert('Akses Ditolak! Menu ini dilindungi dan hanya bisa diakses oleh Akun Admin.'); return;
             }
             document.querySelectorAll('.menu-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`menu-${menuId}`).classList.remove('hidden');
@@ -419,9 +533,12 @@
                 btn.className = "nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium text-sm hover:text-slate-800";
             });
             document.getElementById(`btn-${menuId}`).className = "nav-btn flex-1 py-4 px-6 text-center border-b-2 border-red-600 text-red-600 font-bold text-sm";
+            
+            if (menuId === 'opname') {
+                runStockOpnameAudit();
+            }
         }
 
-        // GRID DENAH MEJA
         const tables = [];
         for(let i=1; i<=14; i++) tables.push({id: `Meja ${i}`});
         tables.push({id: 'Take Away'}, {id: 'Online Order'});
@@ -475,57 +592,39 @@
         function addItemToBill() {
             const qty = parseInt(document.getElementById('order-qty').value);
             if (qty <= 0 || isNaN(qty)) return alert('Isi kuantitas dengan benar!');
-
             const mainSelect = document.getElementById('order-item-select');
             const addonSelect = document.getElementById('order-addon-select');
-            
+            if (!mainSelect.value || mainSelect.value === "") return alert('Silakan pilih Menu Utama!');
+
             const mainItem = globalStocks.find(s => s.id === mainSelect.value);
             const addonItem = addonSelect.value ? globalStocks.find(s => s.id === addonSelect.value) : null;
 
             if (!mainItem) return;
-
             if (mainItem.qty < qty) return alert(`Gagal! Sisa stok ${mainItem.namaName} hanya ${mainItem.qty} Pcs`);
-            if (addonItem && addonItem.qty < qty) return alert(`Gagal! Sisa stok topping ${addonItem.namaName} hanya ${addonItem.qty} Pcs`);
 
-            let finalName = mainItem.namaName;
-            let finalJual = mainItem.hargaJual;
-            let finalModal = mainItem.hargaModal;
-            let subItems = [{ id: mainItem.id, qtyUsed: 1 }];
+            let finalName = mainItem.namaName; let finalJual = mainItem.hargaJual; let finalModal = mainItem.hargaModal;
+            let subItems = [{ id: mainItem.id, namaItem: mainItem.namaName, qtyUsed: 1 }];
 
             if (addonItem) {
-                finalName += ` + ${addonItem.namaName}`;
-                finalJual += addonItem.hargaJual;
-                finalModal += addonItem.hargaModal;
-                subItems.push({ id: addonItem.id, qtyUsed: 1 });
+                finalName += ` + ${addonItem.namaName}`; finalJual += addonItem.hargaJual; finalModal += addonItem.hargaModal;
+                subItems.push({ id: addonItem.id, namaItem: addonItem.namaName, qtyUsed: 1 });
             }
 
-            activeBillItems.push({
-                namaItem: finalName,
-                hargaJual: finalJual,
-                hargaModal: finalModal,
-                qty: qty,
-                resep: subItems
-            });
-
+            activeBillItems.push({ namaItem: finalName, hargaJual: finalJual, hargaModal: finalModal, qty: qty, resep: subItems });
             renderActiveBillItems();
             document.getElementById('order-addon-select').value = '';
         }
 
-        function removeItemFromBill(index) {
-            activeBillItems.splice(index, 1);
-            renderActiveBillItems();
-        }
+        function removeItemFromBill(index) { activeBillItems.splice(index, 1); renderActiveBillItems(); }
 
         function saveOpenBill() {
             if (!selectedTable) return;
             let total = activeBillItems.reduce((acc, curr) => acc + (curr.hargaJual * curr.qty), 0);
             db.collection("bills").doc(selectedTable).set({
-                id: selectedTable, items: activeBillItems, total: total,
-                status: 'OPEN', shift: currentShift, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                id: selectedTable, items: activeBillItems, total: total, status: 'OPEN', shift: currentShift, timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => { closeOrderModal(); });
         }
 
-        // CHECKOUT DENGAN LOG SHIFT AKURAT
         function checkoutBill() {
             if (!selectedTable || activeBillItems.length === 0) return;
             let total = activeBillItems.reduce((acc, curr) => acc + (curr.hargaJual * curr.qty), 0);
@@ -533,7 +632,6 @@
             let profit = total - totalModal;
 
             const batch = db.batch();
-
             activeBillItems.forEach(item => {
                 if (item.resep && Array.isArray(item.resep)) {
                     item.resep.forEach(komponen => {
@@ -548,24 +646,20 @@
             });
 
             const dateStr = new Date().toISOString().split('T')[0];
-            const historyRef = db.collection("transaksi_history").doc();
-            batch.set(historyRef, {
+            const monthStr = dateStr.substring(0, 7);
+            batch.set(db.collection("transaksi_history").doc(), {
                 meja: selectedTable, items: activeBillItems, total: total, hpp: totalModal, profit: profit,
-                shift: currentShift, tanggal: dateStr, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                shift: currentShift, tanggal: dateStr, bulan: monthStr, timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
-
             batch.delete(db.collection("bills").doc(selectedTable));
 
-            batch.commit().then(() => {
-                alert('Transaksi Berhasil Terbayar!');
-                closeOrderModal(); activeBillItems = [];
-            });
+            batch.commit().then(() => { alert('Transaksi Berhasil Terbayar!'); closeOrderModal(); activeBillItems = []; });
         }
 
-        // STOK MANAGEMENT
         function saveStockItem() {
             const id = document.getElementById('stock-id').value;
             const name = document.getElementById('stock-name').value.trim();
+            const kategori = document.getElementById('stock-kategori').value;
             const modal = parseInt(document.getElementById('stock-modal').value);
             const jual = parseInt(document.getElementById('stock-jual').value);
             const additiveIn = parseInt(document.getElementById('stock-qty').value) || 0;
@@ -580,14 +674,14 @@
                         const oldQty = currentData.qty || 0;
                         const existingIn = currentData[`shiftIn_${currentShift}`] || 0;
                         transaction.update(ref, {
-                            namaName: name, hargaModal: modal, hargaJual: jual,
+                            namaName: name, kategori: kategori, hargaModal: modal, hargaJual: jual,
                             qty: oldQty + additiveIn, [`shiftIn_${currentShift}`]: existingIn + additiveIn
                         });
                     });
                 }).then(() => { alert('Bahan Terupdate!'); resetStockForm(); });
             } else {
                 db.collection("stocks").add({ 
-                    namaName: name, hargaModal: modal, hargaJual: jual, qty: additiveIn,
+                    namaName: name, kategori: kategori, hargaModal: modal, hargaJual: jual, qty: additiveIn,
                     [`shiftIn_${currentShift}`]: additiveIn, [`shiftOut_${currentShift}`]: 0, [`shiftInit_${currentShift}`]: 0
                 }).then(() => { alert('Item Baru Berhasil Dibuat!'); resetStockForm(); });
             }
@@ -598,37 +692,45 @@
             const selectOrder = document.getElementById('order-item-select');
             const selectAddon = document.getElementById('order-addon-select');
             
-            tbody.innerHTML = ''; selectOrder.innerHTML = ''; 
+            tbody.innerHTML = ''; 
+            selectOrder.innerHTML = '<option value="">-- Pilih Menu Utama --</option>'; 
             selectAddon.innerHTML = '<option value="">-- Tanpa Tambahan --</option>';
 
             stocks.forEach(item => {
                 const sIn = item[`shiftIn_${currentShift}`] || 0;
                 const sOut = item[`shiftOut_${currentShift}`] || 0;
                 const sInit = item[`shiftInit_${currentShift}`] || (item.qty - sIn + sOut);
+                const kat = item.kategori || "Utama"; 
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50">
-                        <td class="p-4 font-bold text-slate-900">${item.namaName}</td>
+                        <td class="p-4">
+                            <span class="font-bold text-slate-900 block">${item.namaName}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded font-extrabold ${kat === 'Utama' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}">${kat}</span>
+                        </td>
                         <td class="p-4 text-slate-500">Rp ${item.hargaModal.toLocaleString()}</td>
                         <td class="p-4 font-semibold text-slate-700">Rp ${item.hargaJual.toLocaleString()}</td>
                         <td class="p-4 text-center text-slate-500">${sInit}</td>
                         <td class="p-4 text-center text-emerald-600 font-bold">+${sIn}</td>
                         <td class="p-4 text-center text-red-500 font-bold">-${sOut}</td>
                         <td class="p-4 text-center font-black text-slate-900"><span class="bg-slate-100 px-2 py-1 rounded">${item.qty} Pcs</span></td>
-                        <td class="p-4"><button onclick="editStockForm('${item.id}', '${item.namaName}', ${item.hargaModal}, ${item.hargaJual})" class="text-amber-600 font-bold text-xs">Edit</button></td>
-                    </tr>
-                `;
-                selectOrder.innerHTML += `<option value="${item.id}">${item.namaName} (Sisa: ${item.qty})</option>`;
-                selectAddon.innerHTML += `<option value="${item.id}">+ ${item.namaName} (+Rp ${item.hargaJual.toLocaleString()})</option>`;
+                        <td class="p-4"><button onclick="editStockForm('${item.id}', '${item.namaName}', '${kat}', ${item.hargaModal}, ${item.hargaJual})" class="text-amber-600 font-bold text-xs">Edit</button></td>
+                    </tr>`;
+
+                if (kat === "Utama") {
+                    selectOrder.innerHTML += `<option value="${item.id}">${item.namaName} (Sisa: ${item.qty})</option>`;
+                } else if (kat === "Topping") {
+                    selectAddon.innerHTML += `<option value="${item.id}">+ ${item.namaName} (+Rp ${item.hargaJual.toLocaleString()})</option>`;
+                }
             });
         }
 
-        function editStockForm(id, name, modal, jual) {
+        function editStockForm(id, name, kategori, modal, jual) {
             document.getElementById('stock-id').value = id;
             document.getElementById('stock-name').value = name;
+            document.getElementById('stock-kategori').value = kategori || "Utama";
             document.getElementById('stock-modal').value = modal;
             document.getElementById('stock-jual').value = jual;
-            document.getElementById('stock-qty').value = '';
         }
 
         function resetStockForm() {
@@ -637,97 +739,193 @@
             document.getElementById('stock-qty').value = '';
         }
 
-        // AUDIT DETAIL LAPORAN & MONITORING JAM MASUK ABSENSI
+        function saveOperasionalItem() {
+            const nama = document.getElementById('op-item-name').value.trim();
+            const biaya = parseInt(document.getElementById('op-item-cost').value);
+            const tanggal = document.getElementById('op-item-date').value;
+
+            if (!nama || isNaN(biaya) || biaya <= 0 || !tanggal) return alert('Harap isi form pengeluaran dengan benar!');
+
+            db.collection("operasional").add({
+                nama: nama, biaya: biaya, tanggal: tanggal, bulan: tanggal.substring(0, 7),
+                shift: currentShift, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                alert('Biaya Operasional Berhasil Dicatat!');
+                document.getElementById('op-item-name').value = ''; document.getElementById('op-item-cost').value = '';
+                loadOperasionalData();
+            });
+        }
+
+        function loadOperasionalData() {
+            const filterDate = document.getElementById('op-filter-date').value;
+            const filterMonth = document.getElementById('op-filter-month').value;
+            const tbody = document.getElementById('operasional-table-body'); tbody.innerHTML = '';
+
+            db.collection("operasional").orderBy("tanggal", "desc").get().then(snapshot => {
+                let totalHarian = 0; let totalBulanan = 0;
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.tanggal === filterDate) totalHarian += data.biaya;
+                    if (data.bulan === filterMonth) totalBulanan += data.biaya;
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-4 font-mono text-xs">${data.tanggal}</td>
+                            <td class="p-4 text-xs"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold">Shift ${data.shift}</span></td>
+                            <td class="p-4 font-bold text-slate-900">${data.nama}</td>
+                            <td class="p-4 text-right font-bold text-red-600">Rp ${data.biaya.toLocaleString()}</td>
+                            <td class="p-4 text-center"><button onclick="deleteOperasionalItem('${doc.id}')" class="text-xs text-red-500 font-semibold">Hapus</button></td>
+                        </tr>`;
+                });
+                document.getElementById('op-total-daily-display').innerText = 'Rp ' + totalHarian.toLocaleString();
+                document.getElementById('op-total-monthly-display').innerText = 'Rp ' + totalBulanan.toLocaleString();
+            });
+        }
+
+        function deleteOperasionalItem(id) {
+            if(confirm("Hapus item operasional ini?")) {
+                db.collection("operasional").doc(id).delete().then(() => { loadOperasionalData(); });
+            }
+        }
+
+        function runStockOpnameAudit() {
+            const fDate = document.getElementById('opname-filter-date').value;
+            const fMonth = document.getElementById('opname-filter-month').value;
+            const tbody = document.getElementById('opname-table-body');
+            tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Sedang mengkalkulasi mutasi data...</td></tr>';
+
+            let transQuery = db.collection("transaksi_history");
+            let opQuery = db.collection("operasional");
+            let konsumsiQuery = db.collection("konsumsi");
+
+            if (fDate) {
+                transQuery = transQuery.where("tanggal", "==", fDate);
+                opQuery = opQuery.where("tanggal", "==", fDate);
+                konsumsiQuery = konsumsiQuery.where("tanggal", "==", fDate);
+            } else if (fMonth) {
+                transQuery = transQuery.where("bulan", "==", fMonth);
+                opQuery = opQuery.where("bulan", "==", fMonth);
+                konsumsiQuery = konsumsiQuery.where("bulan", "==", fMonth);
+            }
+
+            Promise.all([transQuery.get(), opQuery.get(), konsumsiQuery.get()]).then(([snapTrans, snapOp, snapKonsumsi]) => {
+                let omset = 0, hpp = 0, biayaOp = 0, biayaKonsumsi = 0;
+                let itemSoldCounters = {};
+
+                snapTrans.forEach(doc => {
+                    const d = doc.data();
+                    omset += d.total || 0;
+                    hpp += d.hpp || 0;
+                    if (d.items) {
+                        d.items.forEach(it => {
+                            if (it.resep) {
+                                it.resep.forEach(r => {
+                                    itemSoldCounters[r.namaItem] = (itemSoldCounters[r.namaItem] || 0) + (it.qty * r.qtyUsed);
+                                });
+                            } else {
+                                itemSoldCounters[it.namaItem] = (itemSoldCounters[it.namaItem] || 0) + it.qty;
+                            }
+                        });
+                    }
+                });
+
+                snapOp.forEach(doc => { biayaOp += doc.data().biaya || 0; });
+                snapKonsumsi.forEach(doc => { biayaKonsumsi += doc.data().biaya || 0; });
+
+                let untungKotor = omset - hpp;
+                let untungBersih = untungKotor - biayaOp - biayaKonsumsi;
+
+                document.getElementById('opname-omset').innerText = 'Rp ' + omset.toLocaleString();
+                document.getElementById('opname-hpp').innerText = 'Rp ' + hpp.toLocaleString();
+                document.getElementById('opname-kotor').innerText = 'Rp ' + untungKotor.toLocaleString();
+                document.getElementById('opname-operasional').innerText = 'Rp ' + biayaOp.toLocaleString();
+                document.getElementById('opname-konsumsi').innerText = 'Rp ' + biayaKonsumsi.toLocaleString();
+                document.getElementById('opname-bersih').innerText = 'Rp ' + untungBersih.toLocaleString();
+
+                tbody.innerHTML = '';
+                globalStocks.forEach(stockItem => {
+                    let totalTerjualOut = itemSoldCounters[stockItem.namaName] || 0;
+                    let estimasiStokAwal = stockItem.qty + totalTerjualOut;
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-4 font-bold text-slate-900">${stockItem.namaName}</td>
+                            <td class="p-4 text-center text-slate-500">${estimasiStokAwal} Pcs</td>
+                            <td class="p-4 text-center text-emerald-600 font-semibold">+${(stockItem[`shiftIn_1`] || 0) + (stockItem[`shiftIn_2`] || 0)}</td>
+                            <td class="p-4 text-center text-red-500 font-bold">-${totalTerjualOut} Pcs</td>
+                            <td class="p-4 text-center font-black"><span class="bg-slate-100 text-slate-800 px-2 py-1 rounded">${stockItem.qty} Pcs</span></td>
+                        </tr>`;
+                });
+            });
+        }
+
         function loadDetailedReportAndAbsensi() {
             const filterDate = document.getElementById('filter-date').value;
             const filterShift = document.getElementById('filter-shift').value;
-            
-            // 1. Ambil Laporan Keuangan Finansial & Produk
             let queryTransaksi = db.collection("transaksi_history");
             if (filterDate) queryTransaksi = queryTransaksi.where("tanggal", "==", filterDate);
 
             queryTransaksi.get().then(snapshot => {
-                let totalOmset = 0, totalHpp = 0, totalProfit = 0;
+                let totalOmset = 0, totalHpp = 0;
                 let itemCounters = {};
                 globalStocks.forEach(p => { itemCounters[p.namaName] = 0; });
 
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     if (filterShift === "ALL" || data.shift === filterShift) {
-                        totalOmset += data.total;
-                        totalHpp += (data.hpp || 0);
-                        
+                        totalOmset += data.total; totalHpp += (data.hpp || 0);
                         if(data.items) {
-                            data.items.forEach(item => {
-                                itemCounters[item.namaItem] = (itemCounters[item.namaItem] || 0) + item.qty;
-                            });
+                            data.items.forEach(item => { itemCounters[item.namaItem] = (itemCounters[item.namaItem] || 0) + item.qty; });
                         }
                     }
                 });
 
-                // 2. Ambil Potongan Biaya Makan Karyawan Pada Tanggal Tersebut
                 let queryKonsumsi = db.collection("konsumsi");
                 if (filterDate) queryKonsumsi = queryKonsumsi.where("tanggal", "==", filterDate);
 
                 queryKonsumsi.get().then(snapKonsumsi => {
                     let totalKonsumsiHariIni = 0;
                     snapKonsumsi.forEach(docK => {
-                        const dataK = docK.data();
-                        if (filterShift === "ALL" || dataK.shift === filterShift) {
-                            totalKonsumsiHariIni += dataK.biaya;
-                        }
+                        if (filterShift === "ALL" || docK.data().shift === filterShift) totalKonsumsiHariIni += docK.data().biaya;
                     });
 
-                    // Rumus Laba Bersih Utama: Omset - HPP - Beban Makan Karyawan
-                    totalProfit = totalOmset - totalHpp - totalKonsumsiHariIni;
+                    let queryOp = db.collection("operasional");
+                    if (filterDate) queryOp = queryOp.where("tanggal", "==", filterDate);
 
-                    document.getElementById('report-pemasukan').innerText = 'Rp ' + totalOmset.toLocaleString();
-                    document.getElementById('report-total-hpp').innerText = 'Rp ' + totalHpp.toLocaleString();
-                    document.getElementById('report-total-konsumsi').innerText = 'Rp ' + totalKonsumsiHariIni.toLocaleString();
-                    document.getElementById('report-profit').innerText = 'Rp ' + totalProfit.toLocaleString();
+                    queryOp.get().then(snapOp => {
+                        let totalOperasionalHariIni = 0;
+                        snapOp.forEach(docO => {
+                            if (filterShift === "ALL" || docO.data().shift === filterShift) totalOperasionalHariIni += docO.data().biaya;
+                        });
 
-                    // Hitung Urutan Produk
-                    let sorted = Object.keys(itemCounters).map(k => ({ name: k, qty: itemCounters[k] }));
-                    let best = [...sorted].sort((a,b) => b.qty - a.qty).slice(0, 8);
-                    let slow = [...sorted].sort((a,b) => a.qty - b.qty).slice(0, 8);
+                        let totalProfit = totalOmset - totalHpp - totalKonsumsiHariIni - totalOperasionalHariIni;
+                        document.getElementById('report-pemasukan').innerText = 'Rp ' + totalOmset.toLocaleString();
+                        document.getElementById('report-total-hpp').innerText = 'Rp ' + totalHpp.toLocaleString();
+                        document.getElementById('report-total-konsumsi').innerText = 'Rp ' + totalKonsumsiHariIni.toLocaleString();
+                        document.getElementById('report-total-operasional').innerText = 'Rp ' + totalOperasionalHariIni.toLocaleString();
+                        document.getElementById('report-profit').innerText = 'Rp ' + totalProfit.toLocaleString();
 
-                    const bList = document.getElementById('top-best-seller'); bList.innerHTML = '';
-                    best.forEach((p, i) => bList.innerHTML += `<li class="py-1.5 flex justify-between"><span>${i+1}. ${p.name}</span><span class="font-bold text-emerald-600">${p.qty} porsi</span></li>`);
-
-                    const sList = document.getElementById('top-slow-moving'); sList.innerHTML = '';
-                    slow.forEach((p, i) => sList.innerHTML += `<li class="py-1.5 flex justify-between"><span>${i+1}. ${p.name}</span><span class="font-bold text-slate-400">${p.qty} porsi</span></li>`);
+                        let sorted = Object.keys(itemCounters).map(k => ({ name: k, qty: itemCounters[k] }));
+                        let best = [...sorted].sort((a,b) => b.qty - a.qty).slice(0, 5);
+                        const bList = document.getElementById('top-best-seller'); bList.innerHTML = '';
+                        best.forEach((p, i) => bList.innerHTML += `<li class="py-1.5 flex justify-between"><span>${i+1}. ${p.name}</span><span class="font-bold text-emerald-600">${p.qty} porsi</span></li>`);
+                    });
                 });
             });
 
-            // 3. Ambil Monitoring Jam Masuk Absensi Karyawan
-            let queryAbsensi = db.collection("absensi_karyawan");
-            if (filterDate) queryAbsensi = queryAbsensi.where("tanggal", "==", filterDate);
-
-            queryAbsensi.get().then(snapAbsen => {
-                const listContainer = document.getElementById('absensi-log-list');
-                listContainer.innerHTML = '';
-                if(snapAbsen.empty) {
-                    listContainer.innerHTML = `<p class="text-slate-400 text-center py-4 italic">Tidak ada log absensi.</p>`;
-                    return;
-                }
-                snapAbsen.forEach(docA => {
-                    const dataA = docA.data();
-                    if (filterShift === "ALL" || dataA.shift === filterShift) {
-                        listContainer.innerHTML += `
-                            <li class="p-2 bg-slate-50 rounded-lg flex justify-between items-center border border-slate-100">
-                                <div>
-                                    <p class="font-bold text-slate-900 uppercase">${dataA.nama}</p>
-                                    <p class="text-[10px] text-slate-400">Shift ${dataA.shift} • ${dataA.role}</p>
-                                </div>
-                                <span class="bg-slate-900 text-white font-mono px-2 py-1 rounded text-[11px] font-bold">⏱️ ${dataA.jamMasuk}</span>
-                            </li>
-                        `;
-                    }
+            // Ambil Log Absensi harian
+            if (filterDate) {
+                db.collection("absensi_karyawan").where("tanggal", "==", filterDate).orderBy("timestamp", "asc").get().then(snapAbsen => {
+                    const aList = document.getElementById('absensi-log-list'); aList.innerHTML = '';
+                    if(snapAbsen.empty) aList.innerHTML = '<li class="text-slate-400 italic p-2">Tidak ada data absensi hari ini.</li>';
+                    snapAbsen.forEach(docA => {
+                        const ab = docA.data();
+                        aList.innerHTML += `<li class="p-2 bg-slate-50 rounded-lg flex justify-between"><strong>${ab.nama.toUpperCase()} (Shift ${ab.shift})</strong> <span class="text-slate-500 font-mono">${ab.jamMasuk}</span></li>`;
+                    });
                 });
-            });
+            }
         }
 
-        // KONSUMSI KARYAWAN MANAGEMEN
         function updateStaffNames() {
             namaKaryawan1 = document.getElementById('cfg-nama-k1').value.trim() || "Karyawan 1";
             namaKaryawan2 = document.getElementById('cfg-nama-k2').value.trim() || "Karyawan 2";
@@ -743,11 +941,8 @@
             const dateStr = new Date().toISOString().split('T')[0];
 
             if (!item || isNaN(harga) || harga <= 0) return alert('Data input jatah makan tidak valid!');
-            if((selectValue === 'Karyawan 1' ? staffLimits.k1 : staffLimits.k2) + harga > 150000) return alert('Gagal! Batas anggaran jatah makan Rp 150.000 sudah penuh.');
-
             db.collection("konsumsi").add({
-                slotKey: selectValue, karyawan: staffLabel, item: item, biaya: harga,
-                shift: currentShift, tanggal: dateStr, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                slotKey: selectValue, karyawan: staffLabel, item: item, biaya: harga, shift: currentShift, tanggal: dateStr, timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 document.getElementById('konsumsi-item').value = ''; document.getElementById('konsumsi-harga').value = '';
                 alert('Jatah makan berhasil dimasukkan!');
@@ -758,11 +953,9 @@
             db.collection("konsumsi").onSnapshot(snapshot => {
                 let k1 = 0, k2 = 0;
                 snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if(data.slotKey === 'Karyawan 1') k1 += data.biaya;
-                    if(data.slotKey === 'Karyawan 2') k2 += data.biaya;
+                    if(doc.data().slotKey === 'Karyawan 1') k1 += doc.data().biaya;
+                    if(doc.data().slotKey === 'Karyawan 2') k2 += doc.data().biaya;
                 });
-                staffLimits.k1 = k1; staffLimits.k2 = k2;
                 document.getElementById('k1-used').innerText = `Rp ${k1.toLocaleString()}`;
                 document.getElementById('k2-used').innerText = `Rp ${k2.toLocaleString()}`;
                 document.getElementById('bar-k1').style.width = Math.min((k1 / 150000) * 100, 100) + '%';
@@ -770,9 +963,18 @@
             });
         }
 
-        // AKSELERASI AWAL SISTEM POS
         function initSystem() {
-            document.getElementById('filter-date').value = new Date().toISOString().split('T')[0];
+            const hariIni = new Date().toISOString().split('T')[0];
+            const bulanIni = hariIni.substring(0, 7);
+            
+            document.getElementById('filter-date').value = hariIni;
+            document.getElementById('op-item-date').value = hariIni;
+            document.getElementById('op-filter-date').value = hariIni;
+            document.getElementById('op-filter-month').value = bulanIni;
+            
+            document.getElementById('opname-filter-date').value = hariIni;
+            document.getElementById('opname-filter-month').value = "";
+
             updateStaffNames();
 
             db.collection("bills").onSnapshot(snapshot => {
@@ -784,6 +986,9 @@
                 globalStocks = []; snapshot.forEach(doc => { let d = doc.data(); d.id = doc.id; globalStocks.push(d); });
                 updateStockTableUI(globalStocks);
                 loadDetailedReportAndAbsensi();
+                if(!document.getElementById('menu-opname').classList.contains('hidden')) {
+                    runStockOpnameAudit();
+                }
             });
 
             db.collection("transaksi_history").orderBy("timestamp", "desc").limit(30).onSnapshot(snapshot => {
@@ -801,7 +1006,9 @@
                         </tr>`;
                 });
             });
+            
             listenKonsumsiRealtime();
+            loadOperasionalData();
         }
     </script>
 </body>
