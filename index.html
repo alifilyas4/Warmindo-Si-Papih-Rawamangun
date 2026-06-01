@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warmindo Si Papih Rawamangun - POS Premium v3.1</title>
+    <title>Warmindo Si Papih Rawamangun - POS Premium v3.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -22,7 +22,7 @@
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent opacity-50"></div>
         <div class="bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-md border border-white/20 relative z-10">
             <div class="text-center mb-8">
-                <span class="bg-red-100 text-red-600 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Sistem POS Real-time v3.1</span>
+                <span class="bg-red-100 text-red-600 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Sistem POS Real-time v3.2</span>
                 <h2 class="text-3xl font-extrabold text-slate-900 mt-3 tracking-tight">Si Papih Rawamangun</h2>
                 <p class="text-sm text-slate-500 mt-1">Masuk dengan akun untuk mencatat absensi kehadiran</p>
             </div>
@@ -116,7 +116,7 @@
                                     <th class="p-4">Tanggal / Waktu</th>
                                     <th class="p-4">Shift</th>
                                     <th class="p-4">Lokasi/Meja / Jenis</th>
-                                    <th class="p-4">Daftar Item Belanja + Kustomisasi</th>
+                                    <th class="p-4 division">Daftar Item Belanja + Kustomisasi</th>
                                     <th class="p-4 text-right">Total Nominal</th>
                                 </tr>
                             </thead>
@@ -266,7 +266,10 @@
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-wrap justify-between items-center gap-4">
-                        <h3 class="font-bold text-slate-900">Aliran Stok Bahan & Produk</h3>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+                            <h3 class="font-bold text-slate-900 whitespace-nowrap">Aliran Stok Bahan & Produk</h3>
+                            <input type="text" id="stock-search-input" oninput="filterStockTableBySearch()" class="p-2 border rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-slate-500 w-full max-w-xs" placeholder="🔍 Cari nama produk/bahan...">
+                        </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase">Filter Pergerakan Shift</label>
                             <select id="stock-filter-shift" onchange="updateStockTableUI(globalStocks)" class="p-2 border rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-slate-500">
@@ -422,7 +425,6 @@
         </main>
     </div>
 
-    <!-- MODAL TRANSAKSI (POPUP DENGAN NOTE METODE PEMBAYARAN) -->
     <div id="order-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border overflow-hidden">
             <div class="bg-gradient-to-r from-red-600 to-red-700 p-4 text-white flex justify-between items-center">
@@ -436,10 +438,12 @@
                 <div class="md:col-span-3 space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 uppercase">Pilih Menu Utama</label>
-                        <select id="order-item-select" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm"></select>
+                        <input type="text" id="order-item-search" oninput="filterDropdownMenu()" class="w-full mt-1 mb-1.5 p-2 bg-slate-100 border rounded-xl text-xs" placeholder="🔍 Ketik nama menu untuk mencari...">
+                        <select id="order-item-select" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm"></select>
                     </div>
                     <div class="bg-amber-50 p-4 rounded-xl border border-amber-200">
                         <label class="block text-xs font-bold text-amber-800 uppercase">✨ Tambahan Kustom (Topping)</label>
+                        <input type="text" id="order-addon-search" oninput="filterDropdownMenu()" class="w-full mt-1 mb-1.5 p-2 bg-white border border-amber-200 rounded-xl text-xs" placeholder="🔍 Ketik nama topping untuk mencari...">
                         <select id="order-addon-select" class="w-full p-2.5 bg-white border border-amber-200 rounded-xl text-sm">
                             <option value="">-- Tanpa Tambahan --</option>
                         </select>
@@ -456,7 +460,6 @@
                         <div id="bill-items-list" class="space-y-2 text-xs max-h-48 overflow-y-auto custom-scroll"></div>
                     </div>
                     <div class="pt-4 border-t mt-4 space-y-3">
-                        <!-- FITUR BARU: PILIHAN CATATAN JENIS TRANSAKSI -->
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Jenis Transaksi / Metode</label>
                             <select id="order-payment-method" class="w-full mt-1 p-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-red-500">
@@ -602,15 +605,61 @@
             document.getElementById('order-modal').classList.remove('hidden');
             activeBillItems = activeBill ? activeBill.items : [];
             document.getElementById('order-qty').value = '1';
-            document.getElementById('order-addon-select').value = '';
             
-            // RESET DROPDOWN JENIS TRANSAKSI SETIAP KALI MODAL DIBUKA
+            // RESET FILTER SEARCH INPUTS
+            document.getElementById('order-item-search').value = '';
+            document.getElementById('order-addon-search').value = '';
             document.getElementById('order-payment-method').value = 'Cash';
             
+            // POPULASI DROPDOWN URUT ABJAD
+            filterDropdownMenu();
             renderActiveBillItems();
         }
 
         function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
+
+        // URUTAN DAN FILTER REALTIME UNTUK TRANSAKSI DROPDOWN
+        function filterDropdownMenu() {
+            const mainSearch = document.getElementById('order-item-search').value.toLowerCase();
+            const addonSearch = document.getElementById('order-addon-search').value.toLowerCase();
+            
+            const selectOrder = document.getElementById('order-item-select');
+            const selectAddon = document.getElementById('order-addon-select');
+            
+            const currentSelectedMain = selectOrder.value;
+            const currentSelectedAddon = selectAddon.value;
+
+            selectOrder.innerHTML = '<option value="">-- Pilih Menu Utama --</option>';
+            selectAddon.innerHTML = '<option value="">-- Tanpa Tambahan --</option>';
+
+            // Sorting Abjad A-Z berdasarkan namaName
+            const sortedStocks = [...globalStocks].sort((a, b) => a.namaName.localeCompare(b.namaName));
+
+            sortedStocks.forEach(item => {
+                const kat = item.kategori || "Utama";
+                const matchSearch = item.namaName.toLowerCase().includes(kat === "Utama" ? mainSearch : addonSearch);
+
+                if (matchSearch) {
+                    if (kat === "Utama") {
+                        selectOrder.innerHTML += `<option value="${item.id}">${item.namaName} (Sisa: ${item.qty})</option>`;
+                    } else if (kat === "Topping") {
+                        selectAddon.innerHTML += `<option value="${item.id}">+ ${item.namaName} (+Rp ${item.hargaJual.toLocaleString()})</option>`;
+                    }
+                }
+            });
+
+            // Pertahankan value terpilih saat mengetik jika itemnya masih ada dalam list filter
+            selectOrder.value = currentSelectedMain;
+            selectAddon.value = currentSelectedAddon;
+        }
+
+        // UNTUK COCOKKAN APAKAH STRUK SUDAH PUNYA RACIKAN/TOPPING YANG SAMA PERSIS
+        function isRecipeEqual(arr1, arr2) {
+            if (arr1.length !== arr2.length) return false;
+            let temp1 = arr1.map(i => i.id).sort();
+            let temp2 = arr2.map(i => i.id).sort();
+            return temp1.every((val, index) => val === temp2[index]);
+        }
 
         function renderActiveBillItems() {
             const container = document.getElementById('bill-items-list'); container.innerHTML = '';
@@ -651,9 +700,19 @@
                 subItems.push({ id: addonItem.id, namaItem: addonItem.namaName, qtyUsed: 1 });
             }
 
-            activeBillItems.push({ namaItem: finalName, hargaJual: finalJual, hargaModal: finalModal, qty: qty, resep: subItems });
+            // MODIFIKASI FITUR MULTI-CLICK: Jika item menu + topping sama sudah ada di struk, tambahkan kuantitasnya saja.
+            const existingItemIndex = activeBillItems.findIndex(item => isRecipeEqual(item.resep, subItems));
+            
+            if(existingItemIndex > -1) {
+                activeBillItems[existingItemIndex].qty += qty;
+            } else {
+                activeBillItems.push({ namaItem: finalName, hargaJual: finalJual, hargaModal: finalModal, qty: qty, resep: subItems });
+            }
+
             renderActiveBillItems();
             document.getElementById('order-addon-select').value = '';
+            document.getElementById('order-addon-search').value = '';
+            filterDropdownMenu();
         }
 
         function removeItemFromBill(index) { activeBillItems.splice(index, 1); renderActiveBillItems(); }
@@ -672,7 +731,6 @@
             let totalModal = activeBillItems.reduce((acc, curr) => acc + (curr.hargaModal * curr.qty), 0);
             let profit = total - totalModal;
 
-            // AMBIL NOTE PILIHAN JENIS TRANSAKSI
             const paymentMethod = document.getElementById('order-payment-method').value;
 
             const batch = db.batch();
@@ -692,7 +750,6 @@
             const dateStr = new Date().toISOString().split('T')[0];
             const monthStr = dateStr.substring(0, 7);
             
-            // SIMPAN TRANSAKSI LENGKAP DENGAN FIELD jenisTransaksi
             batch.set(db.collection("transaksi_history").doc(), {
                 meja: selectedTable, items: activeBillItems, total: total, hpp: totalModal, profit: profit,
                 shift: currentShift, tanggal: dateStr, bulan: monthStr, jenisTransaksi: paymentMethod, 
@@ -745,19 +802,28 @@
             }
         }
 
+        // REAL-TIME INPUT FILTER TABEL MANAJEMEN STOK
+        function filterStockTableBySearch() {
+            updateStockTableUI(globalStocks);
+        }
+
         function updateStockTableUI(stocks) {
             const tbody = document.getElementById('stock-table-body');
-            const selectOrder = document.getElementById('order-item-select');
-            const selectAddon = document.getElementById('order-addon-select');
-            
             tbody.innerHTML = ''; 
-            selectOrder.innerHTML = '<option value="">-- Pilih Menu Utama --</option>'; 
-            selectAddon.innerHTML = '<option value="">-- Tanpa Tambahan --</option>';
 
             const selectedShiftFilter = document.getElementById('stock-filter-shift').value;
             const targetShift = selectedShiftFilter === 'CURRENT' ? currentShift : selectedShiftFilter;
+            
+            // Mengambil kata kunci pencarian di menu stock
+            const stockSearchKey = document.getElementById('stock-search-input') ? document.getElementById('stock-search-input').value.toLowerCase() : '';
 
-            stocks.forEach(item => {
+            // Pengurutan Abjad A-Z untuk tabel manajemen stock
+            const sortedStocks = [...stocks].sort((a, b) => a.namaName.localeCompare(b.namaName));
+
+            sortedStocks.forEach(item => {
+                // Skip rendering jika nama produk tidak lolos filter search keyword
+                if(stockSearchKey && !item.namaName.toLowerCase().includes(stockSearchKey)) return;
+
                 const sIn = item[`shiftIn_${targetShift}`] || 0;
                 const sOut = item[`shiftOut_${targetShift}`] || 0;
                 const sInit = item[`shiftInit_${targetShift}`] || (item.qty - sIn + sOut);
@@ -781,13 +847,12 @@
                             <button onclick="deleteStockItem('${item.id}', '${item.namaName}')" class="text-red-600 font-bold text-xs hover:underline">Hapus</button>
                         </td>
                     </tr>`;
-
-                if (kat === "Utama") {
-                    selectOrder.innerHTML += `<option value="${item.id}">${item.namaName} (Sisa: ${item.qty})</option>`;
-                } else if (kat === "Topping") {
-                    selectAddon.innerHTML += `<option value="${item.id}">+ ${item.namaName} (+Rp ${item.hargaJual.toLocaleString()})</option>`;
-                }
             });
+            
+            // Sinkronkan juga daftar pilihan di dropdown modal transaksi secara otomatis
+            if (!document.getElementById('order-modal').classList.contains('hidden')) {
+                filterDropdownMenu();
+            }
         }
 
         function deleteStockItem(id, name) {
@@ -837,7 +902,6 @@
                 docs.forEach(data => {
                     let itemsStr = data.items.map(i => `${i.namaItem} (${i.qty})`).join(', ');
                     
-                    // WARNA BADGE DINAMIS BERDASARKAN JENIS TRANSAKSI YANG DICATAT
                     let methodColor = "bg-slate-100 text-slate-700";
                     if (data.jenisTransaksi === "QRIS") methodColor = "bg-blue-100 text-blue-700 font-bold";
                     if (data.jenisTransaksi === "Transfer") methodColor = "bg-purple-100 text-purple-700 font-bold";
@@ -862,7 +926,6 @@
             });
         }
 
-        // Sisa kode fungsionalitas dipertahankan tanpa perubahan merusak
         function editStockForm(id, name, kategori, modal, jual) {
             document.getElementById('stock-id').value = id;
             document.getElementById('stock-name').value = name;
@@ -981,7 +1044,10 @@
                 document.getElementById('opname-bersih').innerText = 'Rp ' + untungBersih.toLocaleString();
 
                 tbody.innerHTML = '';
-                globalStocks.forEach(stockItem => {
+                
+                const sortedStocks = [...globalStocks].sort((a, b) => a.namaName.localeCompare(b.namaName));
+
+                sortedStocks.forEach(stockItem => {
                     let totalTerjualOut = itemSoldCounters[stockItem.namaName] || 0;
                     let estimasiStokAwal = stockItem.qty + totalTerjualOut;
 
