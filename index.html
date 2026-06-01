@@ -425,7 +425,6 @@
         </main>
     </div>
 
-    <!-- MODAL TRANSAKSI (PERBAIKAN FITUR FILTER SEARCH & MULTI TOPPING) -->
     <div id="order-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border overflow-hidden">
             <div class="bg-gradient-to-r from-red-600 to-red-700 p-4 text-white flex justify-between items-center">
@@ -437,13 +436,11 @@
             </div>
             <div class="p-6 grid grid-cols-1 md:grid-cols-5 gap-6">
                 <div class="md:col-span-3 space-y-4">
-                    <!-- FILTER CARI MENU UTAMA -->
                     <div>
                         <label class="block text-xs font-bold text-slate-600 uppercase">Pilih Menu Utama</label>
                         <input type="text" id="order-item-search" oninput="filterDropdownMenu()" class="w-full mt-1 mb-1.5 p-2 bg-slate-100 border rounded-xl text-xs" placeholder="🔍 Ketik nama menu untuk mencari...">
                         <select id="order-item-select" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm"></select>
                     </div>
-                    <!-- FILTER CARI TOPPING -->
                     <div class="bg-amber-50 p-4 rounded-xl border border-amber-200">
                         <label class="block text-xs font-bold text-amber-800 uppercase">✨ Tambahan Kustom (Topping)</label>
                         <input type="text" id="order-addon-search" oninput="filterDropdownMenu()" class="w-full mt-1 mb-1.5 p-2 bg-white border border-amber-200 rounded-xl text-xs" placeholder="🔍 Ketik nama topping untuk mencari...">
@@ -615,7 +612,6 @@
 
         function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
 
-        // PERBAIKAN UTAMA 1: FITUR SEARCH DROPDOWN BERFUNGSI SEPENUHNYA & URUT A-Z
         function filterDropdownMenu() {
             const mainSearch = document.getElementById('order-item-search').value.toLowerCase().trim();
             const addonSearch = document.getElementById('order-addon-search').value.toLowerCase().trim();
@@ -623,14 +619,12 @@
             const selectOrder = document.getElementById('order-item-select');
             const selectAddon = document.getElementById('order-addon-select');
             
-            // Simpan value lama agar tidak ter-reset otomatis saat mengetik kata kunci baru
             const previousSelectedMain = selectOrder.value;
             const previousSelectedAddon = selectAddon.value;
 
             selectOrder.innerHTML = '<option value="">-- Pilih Menu Utama --</option>';
             selectAddon.innerHTML = '<option value="">-- Tanpa Tambahan --</option>';
 
-            // Urutkan produk berdasarkan Abjad dari A-Z
             const sortedStocks = [...globalStocks].sort((a, b) => a.namaName.localeCompare(b.namaName));
 
             sortedStocks.forEach(item => {
@@ -648,7 +642,6 @@
                 }
             });
 
-            // Pulihkan kembali opsi yang sempat dipilih agar filter berjalan mulus
             selectOrder.value = previousSelectedMain;
             selectAddon.value = previousSelectedAddon;
         }
@@ -678,7 +671,7 @@
             document.getElementById('bill-total-display').innerText = 'Rp ' + total.toLocaleString();
         }
 
-        // PERBAIKAN UTAMA 2: ADD MULTI MENU UTAMA & TOPPING LEBIH DARI 1 DAPAT BERFUNGSI SEPENUHNYA
+        // LOGIKA PENAMBAHAN ITEM BARU (GABUNGAN PERBAIKAN SEARCH, MULTI-TOPPING, & BOLEH TOPPING SAJA)
         function addItemToBill() {
             const qty = parseInt(document.getElementById('order-qty').value);
             if (qty <= 0 || isNaN(qty)) return alert('Isi kuantitas dengan benar!');
@@ -686,31 +679,46 @@
             const selectOrder = document.getElementById('order-item-select');
             const selectAddon = document.getElementById('order-addon-select');
             
-            if (!selectOrder.value || selectOrder.value === "") return alert('Silakan pilih Menu Utama!');
+            if ((!selectOrder.value || selectOrder.value === "") && (!selectAddon.value || selectAddon.value === "")) {
+                return alert('Silakan pilih Menu Utama atau Topping terlebih dahulu!');
+            }
 
-            const mainItem = globalStocks.find(s => s.id === selectOrder.value);
+            const mainItem = selectOrder.value ? globalStocks.find(s => s.id === selectOrder.value) : null;
             const addonItem = selectAddon.value ? globalStocks.find(s => s.id === selectAddon.value) : null;
 
-            if (!mainItem) return;
-            if (mainItem.qty < qty) return alert(`Gagal! Sisa stok ${mainItem.namaName} hanya ${mainItem.qty} Pcs`);
+            if (mainItem && mainItem.qty < qty) {
+                return alert(`Gagal! Sisa stok ${mainItem.namaName} hanya ${mainItem.qty} Pcs`);
+            }
+            if (addonItem && addonItem.qty < qty) {
+                return alert(`Gagal! Sisa stok ${addonItem.namaName} hanya ${addonItem.qty} Pcs`);
+            }
 
-            let finalName = mainItem.namaName; 
-            let finalJual = mainItem.hargaJual; 
-            let finalModal = mainItem.hargaModal;
-            
-            let subItems = [{ id: mainItem.id, namaItem: mainItem.namaName, qtyUsed: 1 }];
+            let finalName = "";
+            let finalJual = 0;
+            let finalModal = 0;
+            let subItems = [];
+
+            if (mainItem) {
+                finalName = mainItem.namaName;
+                finalJual += mainItem.hargaJual;
+                finalModal += mainItem.hargaModal;
+                subItems.push({ id: mainItem.id, namaItem: mainItem.namaName, qtyUsed: 1 });
+            }
 
             if (addonItem) {
-                finalName += ` + ${addonItem.namaName}`; 
-                finalJual += addonItem.hargaJual; 
+                if (finalName !== "") {
+                    finalName += ` + ${addonItem.namaName}`;
+                } else {
+                    finalName = addonItem.namaName;
+                }
+                finalJual += addonItem.hargaJual;
                 finalModal += addonItem.hargaModal;
                 subItems.push({ id: addonItem.id, namaItem: addonItem.namaName, qtyUsed: 1 });
             }
 
-            // Periksa apakah racikan menu utama + topping yang sama persis ini sudah ada dalam keranjang item nota
             const existingItemIndex = activeBillItems.findIndex(item => isRecipeEqual(item.resep, subItems));
             
-            if(existingItemIndex > -1) {
+            if (existingItemIndex > -1) {
                 activeBillItems[existingItemIndex].qty += qty;
             } else {
                 activeBillItems.push({ 
@@ -722,14 +730,11 @@
                 });
             }
 
-            // Refresh Tampilan Keranjang
             renderActiveBillItems();
             
-            // JANGAN RESET INPUT MENU UTAMA agar pengguna bisa langsung ganti varian Topping berikutnya
             selectAddon.value = '';
             document.getElementById('order-addon-search').value = '';
             
-            // Bangun ulang list dropdown agar angka sisa stok terupdate
             filterDropdownMenu();
         }
 
@@ -863,7 +868,6 @@
                     </tr>`;
             });
             
-            // Otomatis sinkronkan opsi transaksi jika modal sedang aktif dibuka
             if (document.getElementById('order-modal') && !document.getElementById('order-modal').classList.contains('hidden')) {
                 filterDropdownMenu();
             }
@@ -1137,7 +1141,7 @@
             const harga = parseInt(document.getElementById('konsumsi-harga').value);
             const dateStr = new Date().toISOString().split('T')[0];
 
-            if (!item || isNaN(harga) || harga <= 0) return alert('Data input jatah makan tidak valid!');
+            if (!item || isNaN(harga) || harga <= 0) return alert('Data jatah makan tidak valid!');
             db.collection("konsumsi").add({
                 slotKey: selectValue, karyawan: staffLabel, item: item, biaya: harga, shift: currentShift, tanggal: dateStr, timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
