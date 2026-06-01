@@ -118,6 +118,7 @@
                                     <th class="p-4">Lokasi/Meja / Jenis</th>
                                     <th class="p-4">Daftar Item Belanja + Kustomisasi</th>
                                     <th class="p-4 text-right">Total Nominal</th>
+                                    <th class="p-4 text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="history-table-body" class="text-sm divide-y divide-slate-100 text-slate-700"></tbody>
@@ -514,7 +515,7 @@
         const userDatabase = {
             "admin": { pin: "1111", role: "Admin" },
             "saipul": { pin: "5678", role: "Karyawan" },
-            "aris": { pin: "9876", role: "Karyawan" },
+            "karyawan": { pin: "9876", role: "Karyawan" },
             "anton": { pin: "2468", role: "Karyawan" }
         };
 
@@ -671,7 +672,6 @@
             document.getElementById('bill-total-display').innerText = 'Rp ' + total.toLocaleString();
         }
 
-        // LOGIKA PENAMBAHAN ITEM BARU (GABUNGAN PERBAIKAN SEARCH, MULTI-TOPPING, & BOLEH TOPPING SAJA)
         function addItemToBill() {
             const qty = parseInt(document.getElementById('order-qty').value);
             if (qty <= 0 || isNaN(qty)) return alert('Isi kuantitas dengan benar!');
@@ -889,7 +889,7 @@
             const filterDate = document.getElementById('history-filter-date').value;
             const filterShift = document.getElementById('history-filter-shift').value;
             const tbody = document.getElementById('history-table-body');
-            tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Memuat arsip nota...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Memuat arsip nota...</td></tr>';
 
             let query = db.collection("transaksi_history");
 
@@ -899,20 +899,30 @@
             historyUnsubscribe = query.onSnapshot(snapshot => {
                 tbody.innerHTML = '';
                 if(snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Tidak ada transaksi ditemukan</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Tidak ada transaksi ditemukan</td></tr>';
                     return;
                 }
 
-                let docs = [];
-                snapshot.forEach(doc => docs.push(doc.data()));
-                docs.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                let docsWithId = [];
+                snapshot.forEach(doc => {
+                    docsWithId.push({ id: doc.id, ...doc.data() });
+                });
+                docsWithId.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 
-                docs.forEach(data => {
+                docsWithId.forEach(data => {
                     let itemsStr = data.items.map(i => `${i.namaItem} (${i.qty})`).join(', ');
                     let methodColor = "bg-slate-100 text-slate-700";
                     if (data.jenisTransaksi === "QRIS") methodColor = "bg-blue-100 text-blue-700 font-bold";
                     if (data.jenisTransaksi === "Transfer") methodColor = "bg-purple-100 text-purple-700 font-bold";
                     if (data.jenisTransaksi === "Cash") methodColor = "bg-amber-100 text-amber-800 font-bold";
+
+                    // Tombol Hapus hanya dibuat aktif jika user saat ini adalah Admin
+                    let actionButton = '';
+                    if (currentRole === 'Admin') {
+                        actionButton = `<button onclick="deleteTransactionHistory('${data.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs px-3 py-1.5 rounded-xl border border-red-200 transition">Hapus</button>`;
+                    } else {
+                        actionButton = `<span class="text-xs text-slate-400 italic">No Access</span>`;
+                    }
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50">
@@ -924,8 +934,60 @@
                             </td>
                             <td class="p-4 text-xs font-medium text-slate-600 truncate max-w-xs" title="${itemsStr}">${itemsStr}</td>
                             <td class="p-4 text-right font-black text-emerald-600">Rp ${data.total.toLocaleString()}</td>
+                            <td class="p-4 text-center">${actionButton}</td>
                         </tr>`;
                 });
+            });
+        }
+
+        // FITUR BARU: SEBAGAI ADMIN DAPAT MENGHAPUS NOTA & MENGEMBALIKAN STOK BARANG SECARA OTOMATIS
+        function deleteTransactionHistory(transactionId) {
+            if (currentRole !== 'Admin') {
+                return alert('Akses Ditolak! Hanya Akun Admin yang dapat menghapus riwayat transaksi.');
+            }
+
+            if (!confirm("Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini akan mengembalikan jumlah stok barang yang terjual dan mereduksi pencatatan laporan secara permanen.")) return;
+
+            const transRef = db.collection("transaksi_history").doc(transactionId);
+
+            transRef.get().then(doc => {
+                if (!doc.exists) return alert("Data transaksi tidak ditemukan!");
+                
+                const data = doc.data();
+                const txShift = data.shift;
+                const batch = db.batch();
+
+                // Kembalikan stok item berdasarkan resep/komponen yang terjual
+                if (data.items && Array.isArray(data.items)) {
+                    data.items.forEach(item => {
+                        if (item.resep && Array.isArray(item.resep)) {
+                            item.resep.forEach(komponen => {
+                                const totalKembali = komponen.qtyUsed * item.qty;
+                                const stockRef = db.collection("stocks").doc(komponen.id);
+                                
+                                batch.update(stockRef, {
+                                    qty: firebase.firestore.FieldValue.increment(totalKembali),
+                                    [`shiftOut_${txShift}`]: firebase.firestore.FieldValue.increment(-totalKembali)
+                                });
+                            });
+                        }
+                    });
+                }
+
+                // Hapus berkas transaksi dari database
+                batch.delete(transRef);
+
+                return batch.commit();
+            }).then(() => {
+                alert("Transaksi berhasil dihapus dan stok barang telah dikembalikan secara sinkron!");
+                // Jalankan kembali audit laporan dan opname agar data dashboard langsung terupdate
+                loadDetailedReportAndAbsensi();
+                if (document.getElementById('menu-opname').classList.contains('hidden') === false) {
+                    runStockOpnameAudit();
+                }
+            }).catch(err => {
+                console.error("Error menghapus riwayat transaksi: ", err);
+                alert("Terjadi kesalahan sistem saat mencoba menghapus transaksi.");
             });
         }
 
