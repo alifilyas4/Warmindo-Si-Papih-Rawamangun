@@ -89,9 +89,25 @@
 
             <section id="menu-riwayat" class="menu-content hidden space-y-4">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                        <h3 class="font-bold text-slate-900">Arsip Transaksi Penjualan</h3>
-                        <span class="text-xs text-slate-400 italic">*Menampilkan 30 transaksi terakhir</span>
+                    <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-wrap justify-between items-center gap-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900">Arsip Transaksi Penjualan</h3>
+                            <span class="text-xs text-slate-400 italic">*Menampilkan histori penjualan berdasarkan filter</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase">Filter Tanggal</label>
+                                <input type="date" id="history-filter-date" onchange="loadHistoryData()" class="p-2 border rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-red-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase">Filter Shift</label>
+                                <select id="history-filter-shift" onchange="loadHistoryData()" class="p-2 border rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-red-500">
+                                    <option value="ALL">Semua Shift</option>
+                                    <option value="1">Shift 1</option>
+                                    <option value="2">Shift 2</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="overflow-x-auto custom-scroll">
                         <table class="w-full text-left border-collapse">
@@ -215,7 +231,6 @@
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-bold text-slate-900 text-base" id="stock-form-title">Tambah / Modifikasi Bahan & Produk</h3>
-                        <span class="text-xs font-bold bg-amber-100 text-amber-800 px-3 py-1 rounded-full" id="stock-shift-badge">Aliran Data: Shift --</span>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-5 gap-4 items-end">
                         <input type="hidden" id="stock-id">
@@ -250,8 +265,16 @@
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-5 border-b border-slate-100 bg-slate-50/50">
-                        <h3 class="font-bold text-slate-900">Aliran Stok Berdasarkan Shift Berjalan</h3>
+                    <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-wrap justify-between items-center gap-4">
+                        <h3 class="font-bold text-slate-900">Aliran Stok Bahan & Produk</h3>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase">Filter Pergerakan Shift</label>
+                            <select id="stock-filter-shift" onchange="updateStockTableUI(globalStocks)" class="p-2 border rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-slate-500">
+                                <option value="CURRENT">Shift Berjalan Saat Ini</option>
+                                <option value="1">Shift 1 (08.00 - 17.00)</option>
+                                <option value="2">Shift 2 (17.01 - 02.00)</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="overflow-x-auto custom-scroll">
                         <table class="w-full text-left">
@@ -260,10 +283,10 @@
                                     <th class="p-4">Nama Bahan / Item</th>
                                     <th class="p-4">Modal</th>
                                     <th class="p-4">Harga Jual</th>
-                                    <th class="p-4 text-center">Stok Awal Shift</th>
-                                    <th class="p-4 text-center text-emerald-600">Masuk (Shift Ini)</th>
-                                    <th class="p-4 text-center text-red-600">Keluar (Shift Ini)</th>
-                                    <th class="p-4 text-center">Sisa Riil Saat Ini</th>
+                                    <th class="p-4 text-center">Stock Awal</th>
+                                    <th class="p-4 text-center text-emerald-600">Stock Masuk</th>
+                                    <th class="p-4 text-center text-red-600">Stock Keluar</th>
+                                    <th class="p-4 text-center">Stock Saat Ini</th>
                                     <th class="p-4">Aksi</th>
                                 </tr>
                             </thead>
@@ -460,6 +483,7 @@
         let currentUser = null, currentRole = null, currentShift = null, selectedTable = null;
         let activeBillItems = [], globalStocks = [];
         let namaKaryawan1 = "Karyawan 1", namaKaryawan2 = "Karyawan 2";
+        let historyUnsubscribe = null; // Menyimpan listener real-time history agar bisa di-reset berkala
 
         setInterval(() => {
             const now = new Date();
@@ -492,7 +516,6 @@
                     document.getElementById('user-display').innerText = username.toUpperCase();
                     document.getElementById('role-display').innerText = currentRole;
                     document.getElementById('shift-display').innerText = "SHIFT " + currentShift;
-                    document.getElementById('stock-shift-badge').innerText = `Aliran Data: Shift ${currentShift}`;
 
                     if (currentRole === 'Admin') {
                         document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
@@ -518,12 +541,12 @@
         }
 
         function handleLogout() {
+            if (historyUnsubscribe) historyUnsubscribe();
             document.getElementById('main-dashboard').classList.add('hidden');
             document.getElementById('login-page').classList.remove('hidden');
         }
 
         function switchMenu(menuId) {
-            // PROTEKSI TINGKAT TINGGI: Jika akun Karyawan memaksa membuka menu admin lewat konsol/inspeksi
             if (currentRole === 'Karyawan' && (menuId === 'stock' || menuId === 'laporan' || menuId === 'opname')) {
                 alert('Akses Ditolak! Menu ini dilindungi dan hanya bisa diakses oleh Akun Admin.'); return;
             }
@@ -536,6 +559,9 @@
             
             if (menuId === 'opname') {
                 runStockOpnameAudit();
+            }
+            if (menuId === 'riwayat') {
+                loadHistoryData();
             }
         }
 
@@ -672,17 +698,23 @@
                     return transaction.get(ref).then(doc => {
                         const currentData = doc.data();
                         const oldQty = currentData.qty || 0;
-                        const existingIn = currentData[`shiftIn_${currentShift}`] || 0;
+                        const selectedShiftFilter = document.getElementById('stock-filter-shift').value;
+                        const targetShift = selectedShiftFilter === 'CURRENT' ? currentShift : selectedShiftFilter;
+                        const existingIn = currentData[`shiftIn_${targetShift}`] || 0;
+                        
                         transaction.update(ref, {
                             namaName: name, kategori: kategori, hargaModal: modal, hargaJual: jual,
-                            qty: oldQty + additiveIn, [`shiftIn_${currentShift}`]: existingIn + additiveIn
+                            qty: oldQty + additiveIn, [`shiftIn_${targetShift}`]: existingIn + additiveIn
                         });
                     });
                 }).then(() => { alert('Bahan Terupdate!'); resetStockForm(); });
             } else {
+                const selectedShiftFilter = document.getElementById('stock-filter-shift').value;
+                const targetShift = selectedShiftFilter === 'CURRENT' ? currentShift : selectedShiftFilter;
+                
                 db.collection("stocks").add({ 
                     namaName: name, kategori: kategori, hargaModal: modal, hargaJual: jual, qty: additiveIn,
-                    [`shiftIn_${currentShift}`]: additiveIn, [`shiftOut_${currentShift}`]: 0, [`shiftInit_${currentShift}`]: 0
+                    [`shiftIn_${targetShift}`]: additiveIn, [`shiftOut_${targetShift}`]: 0, [`shiftInit_${targetShift}`]: 0
                 }).then(() => { alert('Item Baru Berhasil Dibuat!'); resetStockForm(); });
             }
         }
@@ -696,10 +728,14 @@
             selectOrder.innerHTML = '<option value="">-- Pilih Menu Utama --</option>'; 
             selectAddon.innerHTML = '<option value="">-- Tanpa Tambahan --</option>';
 
+            const selectedShiftFilter = document.getElementById('stock-filter-shift').value;
+            // Jika memilih CURRENT maka gunakan shift yang sedang aktif saat ini
+            const targetShift = selectedShiftFilter === 'CURRENT' ? currentShift : selectedShiftFilter;
+
             stocks.forEach(item => {
-                const sIn = item[`shiftIn_${currentShift}`] || 0;
-                const sOut = item[`shiftOut_${currentShift}`] || 0;
-                const sInit = item[`shiftInit_${currentShift}`] || (item.qty - sIn + sOut);
+                const sIn = item[`shiftIn_${targetShift}`] || 0;
+                const sOut = item[`shiftOut_${targetShift}`] || 0;
+                const sInit = item[`shiftInit_${targetShift}`] || (item.qty - sIn + sOut);
                 const kat = item.kategori || "Utama"; 
 
                 tbody.innerHTML += `
@@ -722,6 +758,49 @@
                 } else if (kat === "Topping") {
                     selectAddon.innerHTML += `<option value="${item.id}">+ ${item.namaName} (+Rp ${item.hargaJual.toLocaleString()})</option>`;
                 }
+            });
+        }
+
+        function loadHistoryData() {
+            // Putuskan listener real-time sebelumnya jika ada agar tidak double data
+            if (historyUnsubscribe) historyUnsubscribe();
+
+            const filterDate = document.getElementById('history-filter-date').value;
+            const filterShift = document.getElementById('history-filter-shift').value;
+            const tbody = document.getElementById('history-table-body');
+            tbody.innerHTML = '';
+
+            let query = db.collection("transaksi_history");
+
+            if (filterDate) {
+                query = query.where("tanggal", "==", filterDate);
+            }
+            if (filterShift !== "ALL") {
+                query = query.where("shift", "==", filterShift);
+            }
+
+            // Gunakan onSnapshot agar data riwayat terfilter tetap terupdate secara real-time
+            historyUnsubscribe = query.orderBy("timestamp", "desc").onSnapshot(snapshot => {
+                tbody.innerHTML = '';
+                if(snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Tidak ada transaksi ditemukan</td></tr>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    let itemsStr = data.items.map(i => `${i.namaItem} (${i.qty})`).join(', ');
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-4 text-xs font-mono">${data.tanggal}</td>
+                            <td class="p-4 text-xs"><span class="px-2 py-0.5 rounded font-bold bg-slate-100 text-slate-700">Shift ${data.shift}</span></td>
+                            <td class="p-4 font-bold text-slate-800">${data.meja}</td>
+                            <td class="p-4 text-xs font-medium text-slate-600 truncate max-w-xs">${itemsStr}</td>
+                            <td class="p-4 text-right font-black text-emerald-600">Rp ${data.total.toLocaleString()}</td>
+                        </tr>`;
+                });
+            }, error => {
+                console.log("Error loading history: ", error);
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-500 italic">Gagal memuat data (Pastikan Index Firestore telah dibuat)</td></tr>';
             });
         }
 
@@ -913,7 +992,6 @@
                 });
             });
 
-            // Ambil Log Absensi harian
             if (filterDate) {
                 db.collection("absensi_karyawan").where("tanggal", "==", filterDate).orderBy("timestamp", "asc").get().then(snapAbsen => {
                     const aList = document.getElementById('absensi-log-list'); aList.innerHTML = '';
@@ -971,6 +1049,7 @@
             document.getElementById('op-item-date').value = hariIni;
             document.getElementById('op-filter-date').value = hariIni;
             document.getElementById('op-filter-month').value = bulanIni;
+            document.getElementById('history-filter-date').value = hariIni;
             
             document.getElementById('opname-filter-date').value = hariIni;
             document.getElementById('opname-filter-month').value = "";
@@ -989,22 +1068,6 @@
                 if(!document.getElementById('menu-opname').classList.contains('hidden')) {
                     runStockOpnameAudit();
                 }
-            });
-
-            db.collection("transaksi_history").orderBy("timestamp", "desc").limit(30).onSnapshot(snapshot => {
-                const tbody = document.getElementById('history-table-body'); tbody.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    let itemsStr = data.items.map(i => `${i.namaItem} (${i.qty})`).join(', ');
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50">
-                            <td class="p-4 text-xs font-mono">${data.tanggal}</td>
-                            <td class="p-4 text-xs"><span class="px-2 py-0.5 rounded font-bold bg-slate-100 text-slate-700">Shift ${data.shift}</span></td>
-                            <td class="p-4 font-bold text-slate-800">${data.meja}</td>
-                            <td class="p-4 text-xs font-medium text-slate-600 truncate max-w-xs">${itemsStr}</td>
-                            <td class="p-4 text-right font-black text-emerald-600">Rp ${data.total.toLocaleString()}</td>
-                        </tr>`;
-                });
             });
             
             listenKonsumsiRealtime();
