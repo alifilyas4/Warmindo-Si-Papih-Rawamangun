@@ -729,7 +729,6 @@
             selectAddon.innerHTML = '<option value="">-- Tanpa Tambahan --</option>';
 
             const selectedShiftFilter = document.getElementById('stock-filter-shift').value;
-            // Jika memilih CURRENT maka gunakan shift yang sedang aktif saat ini
             const targetShift = selectedShiftFilter === 'CURRENT' ? currentShift : selectedShiftFilter;
 
             stocks.forEach(item => {
@@ -750,7 +749,11 @@
                         <td class="p-4 text-center text-emerald-600 font-bold">+${sIn}</td>
                         <td class="p-4 text-center text-red-500 font-bold">-${sOut}</td>
                         <td class="p-4 text-center font-black text-slate-900"><span class="bg-slate-100 px-2 py-1 rounded">${item.qty} Pcs</span></td>
-                        <td class="p-4"><button onclick="editStockForm('${item.id}', '${item.namaName}', '${kat}', ${item.hargaModal}, ${item.hargaJual})" class="text-amber-600 font-bold text-xs">Edit</button></td>
+                        <td class="p-4 flex gap-3 items-center">
+                            <button onclick="editStockForm('${item.id}', '${item.namaName}', '${kat}', ${item.hargaModal}, ${item.hargaJual})" class="text-amber-600 font-bold text-xs hover:underline">Edit</button>
+                            <span class="text-slate-300">|</span>
+                            <button onclick="deleteStockItem('${item.id}', '${item.namaName}')" class="text-red-600 font-bold text-xs hover:underline">Hapus</button>
+                        </td>
                     </tr>`;
 
                 if (kat === "Utama") {
@@ -761,7 +764,22 @@
             });
         }
 
-        // REVISI CORE: Memperbaiki loading Riwayat Transaksi tanpa memicu error index Firestore
+        function deleteStockItem(id, name) {
+            if (confirm(`Apakah Anda yakin ingin menghapus produk/bahan "${name}" secara permanen dari sistem?`)) {
+                db.collection("stocks").doc(id).delete()
+                .then(() => {
+                    alert(`Produk "${name}" berhasil dihapus!`);
+                    if (document.getElementById('stock-id').value === id) {
+                        resetStockForm();
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error removing document: ", error);
+                    alert("Gagal menghapus produk. Silakan periksa kembali jaringan database Anda.");
+                });
+            }
+        }
+
         function loadHistoryData() {
             if (historyUnsubscribe) historyUnsubscribe();
 
@@ -779,7 +797,6 @@
                 query = query.where("shift", "==", filterShift);
             }
 
-            // PERBAIKAN: Menghapus orderBy() dari Firestore agar tidak crash di tablet
             historyUnsubscribe = query.onSnapshot(snapshot => {
                 tbody.innerHTML = '';
                 if(snapshot.empty) {
@@ -787,11 +804,8 @@
                     return;
                 }
 
-                // Masukkan data ke array lokal untuk kita urutkan sendiri di memori browser
                 let docs = [];
                 snapshot.forEach(doc => docs.push(doc.data()));
-
-                // Urutkan berdasarkan waktu input (timestamp) terbaru ke terlama
                 docs.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 
                 docs.forEach(data => {
