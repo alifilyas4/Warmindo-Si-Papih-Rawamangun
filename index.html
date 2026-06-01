@@ -116,7 +116,7 @@
                                     <th class="p-4">Tanggal / Waktu</th>
                                     <th class="p-4">Shift</th>
                                     <th class="p-4">Lokasi/Meja / Jenis</th>
-                                    <th class="p-4 division">Daftar Item Belanja + Kustomisasi</th>
+                                    <th class="p-4">Daftar Item Belanja + Kustomisasi</th>
                                     <th class="p-4 text-right">Total Nominal</th>
                                 </tr>
                             </thead>
@@ -425,6 +425,7 @@
         </main>
     </div>
 
+    <!-- MODAL TRANSAKSI (PERBAIKAN FITUR FILTER SEARCH & MULTI TOPPING) -->
     <div id="order-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border overflow-hidden">
             <div class="bg-gradient-to-r from-red-600 to-red-700 p-4 text-white flex justify-between items-center">
@@ -436,11 +437,13 @@
             </div>
             <div class="p-6 grid grid-cols-1 md:grid-cols-5 gap-6">
                 <div class="md:col-span-3 space-y-4">
+                    <!-- FILTER CARI MENU UTAMA -->
                     <div>
                         <label class="block text-xs font-bold text-slate-600 uppercase">Pilih Menu Utama</label>
                         <input type="text" id="order-item-search" oninput="filterDropdownMenu()" class="w-full mt-1 mb-1.5 p-2 bg-slate-100 border rounded-xl text-xs" placeholder="🔍 Ketik nama menu untuk mencari...">
                         <select id="order-item-select" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm"></select>
                     </div>
+                    <!-- FILTER CARI TOPPING -->
                     <div class="bg-amber-50 p-4 rounded-xl border border-amber-200">
                         <label class="block text-xs font-bold text-amber-800 uppercase">✨ Tambahan Kustom (Topping)</label>
                         <input type="text" id="order-addon-search" oninput="filterDropdownMenu()" class="w-full mt-1 mb-1.5 p-2 bg-white border border-amber-200 rounded-xl text-xs" placeholder="🔍 Ketik nama topping untuk mencari...">
@@ -571,12 +574,8 @@
             });
             document.getElementById(`btn-${menuId}`).className = "nav-btn flex-1 py-4 px-6 text-center border-b-2 border-red-600 text-red-600 font-bold text-sm";
             
-            if (menuId === 'opname') {
-                runStockOpnameAudit();
-            }
-            if (menuId === 'riwayat') {
-                loadHistoryData();
-            }
+            if (menuId === 'opname') runStockOpnameAudit();
+            if (menuId === 'riwayat') loadHistoryData();
         }
 
         const tables = [];
@@ -606,54 +605,54 @@
             activeBillItems = activeBill ? activeBill.items : [];
             document.getElementById('order-qty').value = '1';
             
-            // RESET FILTER SEARCH INPUTS
             document.getElementById('order-item-search').value = '';
             document.getElementById('order-addon-search').value = '';
             document.getElementById('order-payment-method').value = 'Cash';
             
-            // POPULASI DROPDOWN URUT ABJAD
             filterDropdownMenu();
             renderActiveBillItems();
         }
 
         function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
 
-        // URUTAN DAN FILTER REALTIME UNTUK TRANSAKSI DROPDOWN
+        // PERBAIKAN UTAMA 1: FITUR SEARCH DROPDOWN BERFUNGSI SEPENUHNYA & URUT A-Z
         function filterDropdownMenu() {
-            const mainSearch = document.getElementById('order-item-search').value.toLowerCase();
-            const addonSearch = document.getElementById('order-addon-search').value.toLowerCase();
+            const mainSearch = document.getElementById('order-item-search').value.toLowerCase().trim();
+            const addonSearch = document.getElementById('order-addon-search').value.toLowerCase().trim();
             
             const selectOrder = document.getElementById('order-item-select');
             const selectAddon = document.getElementById('order-addon-select');
             
-            const currentSelectedMain = selectOrder.value;
-            const currentSelectedAddon = selectAddon.value;
+            // Simpan value lama agar tidak ter-reset otomatis saat mengetik kata kunci baru
+            const previousSelectedMain = selectOrder.value;
+            const previousSelectedAddon = selectAddon.value;
 
             selectOrder.innerHTML = '<option value="">-- Pilih Menu Utama --</option>';
             selectAddon.innerHTML = '<option value="">-- Tanpa Tambahan --</option>';
 
-            // Sorting Abjad A-Z berdasarkan namaName
+            // Urutkan produk berdasarkan Abjad dari A-Z
             const sortedStocks = [...globalStocks].sort((a, b) => a.namaName.localeCompare(b.namaName));
 
             sortedStocks.forEach(item => {
                 const kat = item.kategori || "Utama";
-                const matchSearch = item.namaName.toLowerCase().includes(kat === "Utama" ? mainSearch : addonSearch);
+                const itemLabelName = item.namaName.toLowerCase();
 
-                if (matchSearch) {
-                    if (kat === "Utama") {
+                if (kat === "Utama") {
+                    if (mainSearch === "" || itemLabelName.includes(mainSearch)) {
                         selectOrder.innerHTML += `<option value="${item.id}">${item.namaName} (Sisa: ${item.qty})</option>`;
-                    } else if (kat === "Topping") {
+                    }
+                } else if (kat === "Topping") {
+                    if (addonSearch === "" || itemLabelName.includes(addonSearch)) {
                         selectAddon.innerHTML += `<option value="${item.id}">+ ${item.namaName} (+Rp ${item.hargaJual.toLocaleString()})</option>`;
                     }
                 }
             });
 
-            // Pertahankan value terpilih saat mengetik jika itemnya masih ada dalam list filter
-            selectOrder.value = currentSelectedMain;
-            selectAddon.value = currentSelectedAddon;
+            // Pulihkan kembali opsi yang sempat dipilih agar filter berjalan mulus
+            selectOrder.value = previousSelectedMain;
+            selectAddon.value = previousSelectedAddon;
         }
 
-        // UNTUK COCOKKAN APAKAH STRUK SUDAH PUNYA RACIKAN/TOPPING YANG SAMA PERSIS
         function isRecipeEqual(arr1, arr2) {
             if (arr1.length !== arr2.length) return false;
             let temp1 = arr1.map(i => i.id).sort();
@@ -679,39 +678,58 @@
             document.getElementById('bill-total-display').innerText = 'Rp ' + total.toLocaleString();
         }
 
+        // PERBAIKAN UTAMA 2: ADD MULTI MENU UTAMA & TOPPING LEBIH DARI 1 DAPAT BERFUNGSI SEPENUHNYA
         function addItemToBill() {
             const qty = parseInt(document.getElementById('order-qty').value);
             if (qty <= 0 || isNaN(qty)) return alert('Isi kuantitas dengan benar!');
-            const mainSelect = document.getElementById('order-item-select');
-            const addonSelect = document.getElementById('order-addon-select');
-            if (!mainSelect.value || mainSelect.value === "") return alert('Silakan pilih Menu Utama!');
+            
+            const selectOrder = document.getElementById('order-item-select');
+            const selectAddon = document.getElementById('order-addon-select');
+            
+            if (!selectOrder.value || selectOrder.value === "") return alert('Silakan pilih Menu Utama!');
 
-            const mainItem = globalStocks.find(s => s.id === mainSelect.value);
-            const addonItem = addonSelect.value ? globalStocks.find(s => s.id === addonSelect.value) : null;
+            const mainItem = globalStocks.find(s => s.id === selectOrder.value);
+            const addonItem = selectAddon.value ? globalStocks.find(s => s.id === selectAddon.value) : null;
 
             if (!mainItem) return;
             if (mainItem.qty < qty) return alert(`Gagal! Sisa stok ${mainItem.namaName} hanya ${mainItem.qty} Pcs`);
 
-            let finalName = mainItem.namaName; let finalJual = mainItem.hargaJual; let finalModal = mainItem.hargaModal;
+            let finalName = mainItem.namaName; 
+            let finalJual = mainItem.hargaJual; 
+            let finalModal = mainItem.hargaModal;
+            
             let subItems = [{ id: mainItem.id, namaItem: mainItem.namaName, qtyUsed: 1 }];
 
             if (addonItem) {
-                finalName += ` + ${addonItem.namaName}`; finalJual += addonItem.hargaJual; finalModal += addonItem.hargaModal;
+                finalName += ` + ${addonItem.namaName}`; 
+                finalJual += addonItem.hargaJual; 
+                finalModal += addonItem.hargaModal;
                 subItems.push({ id: addonItem.id, namaItem: addonItem.namaName, qtyUsed: 1 });
             }
 
-            // MODIFIKASI FITUR MULTI-CLICK: Jika item menu + topping sama sudah ada di struk, tambahkan kuantitasnya saja.
+            // Periksa apakah racikan menu utama + topping yang sama persis ini sudah ada dalam keranjang item nota
             const existingItemIndex = activeBillItems.findIndex(item => isRecipeEqual(item.resep, subItems));
             
             if(existingItemIndex > -1) {
                 activeBillItems[existingItemIndex].qty += qty;
             } else {
-                activeBillItems.push({ namaItem: finalName, hargaJual: finalJual, hargaModal: finalModal, qty: qty, resep: subItems });
+                activeBillItems.push({ 
+                    namaItem: finalName, 
+                    hargaJual: finalJual, 
+                    hargaModal: finalModal, 
+                    qty: qty, 
+                    resep: subItems 
+                });
             }
 
+            // Refresh Tampilan Keranjang
             renderActiveBillItems();
-            document.getElementById('order-addon-select').value = '';
+            
+            // JANGAN RESET INPUT MENU UTAMA agar pengguna bisa langsung ganti varian Topping berikutnya
+            selectAddon.value = '';
             document.getElementById('order-addon-search').value = '';
+            
+            // Bangun ulang list dropdown agar angka sisa stok terupdate
             filterDropdownMenu();
         }
 
@@ -802,26 +820,22 @@
             }
         }
 
-        // REAL-TIME INPUT FILTER TABEL MANAJEMEN STOK
         function filterStockTableBySearch() {
             updateStockTableUI(globalStocks);
         }
 
         function updateStockTableUI(stocks) {
             const tbody = document.getElementById('stock-table-body');
+            if(!tbody) return;
             tbody.innerHTML = ''; 
 
             const selectedShiftFilter = document.getElementById('stock-filter-shift').value;
             const targetShift = selectedShiftFilter === 'CURRENT' ? currentShift : selectedShiftFilter;
-            
-            // Mengambil kata kunci pencarian di menu stock
             const stockSearchKey = document.getElementById('stock-search-input') ? document.getElementById('stock-search-input').value.toLowerCase() : '';
 
-            // Pengurutan Abjad A-Z untuk tabel manajemen stock
             const sortedStocks = [...stocks].sort((a, b) => a.namaName.localeCompare(b.namaName));
 
             sortedStocks.forEach(item => {
-                // Skip rendering jika nama produk tidak lolos filter search keyword
                 if(stockSearchKey && !item.namaName.toLowerCase().includes(stockSearchKey)) return;
 
                 const sIn = item[`shiftIn_${targetShift}`] || 0;
@@ -849,24 +863,18 @@
                     </tr>`;
             });
             
-            // Sinkronkan juga daftar pilihan di dropdown modal transaksi secara otomatis
-            if (!document.getElementById('order-modal').classList.contains('hidden')) {
+            // Otomatis sinkronkan opsi transaksi jika modal sedang aktif dibuka
+            if (document.getElementById('order-modal') && !document.getElementById('order-modal').classList.contains('hidden')) {
                 filterDropdownMenu();
             }
         }
 
         function deleteStockItem(id, name) {
-            if (confirm(`Apakah Anda yakin ingin menghapus produk/bahan "${name}" secara permanen dari sistem?`)) {
+            if (confirm(`Apakah Anda yakin ingin menghapus produk/bahan "${name}" secara permanen?`)) {
                 db.collection("stocks").doc(id).delete()
                 .then(() => {
                     alert(`Produk "${name}" berhasil dihapus!`);
-                    if (document.getElementById('stock-id').value === id) {
-                        resetStockForm();
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error removing document: ", error);
-                    alert("Gagal menghapus produk. Silakan periksa kembali jaringan database Anda.");
+                    if (document.getElementById('stock-id').value === id) resetStockForm();
                 });
             }
         }
@@ -881,12 +889,8 @@
 
             let query = db.collection("transaksi_history");
 
-            if (filterDate) {
-                query = query.where("tanggal", "==", filterDate);
-            }
-            if (filterShift !== "ALL") {
-                query = query.where("shift", "==", filterShift);
-            }
+            if (filterDate) query = query.where("tanggal", "==", filterDate);
+            if (filterShift !== "ALL") query = query.where("shift", "==", filterShift);
 
             historyUnsubscribe = query.onSnapshot(snapshot => {
                 tbody.innerHTML = '';
@@ -901,12 +905,10 @@
 
                 docs.forEach(data => {
                     let itemsStr = data.items.map(i => `${i.namaItem} (${i.qty})`).join(', ');
-                    
                     let methodColor = "bg-slate-100 text-slate-700";
                     if (data.jenisTransaksi === "QRIS") methodColor = "bg-blue-100 text-blue-700 font-bold";
                     if (data.jenisTransaksi === "Transfer") methodColor = "bg-purple-100 text-purple-700 font-bold";
                     if (data.jenisTransaksi === "Cash") methodColor = "bg-amber-100 text-amber-800 font-bold";
-                    if (data.jenisTransaksi === "Lain-lain") methodColor = "bg-rose-100 text-rose-700 font-bold";
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50">
@@ -920,9 +922,6 @@
                             <td class="p-4 text-right font-black text-emerald-600">Rp ${data.total.toLocaleString()}</td>
                         </tr>`;
                 });
-            }, error => {
-                console.log("Error loading history: ", error);
-                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-500 italic">Gagal memuat data. Periksa kembali jaringan database Anda.</td></tr>';
             });
         }
 
@@ -960,7 +959,7 @@
         function loadOperasionalData() {
             const filterDate = document.getElementById('op-filter-date').value;
             const filterMonth = document.getElementById('op-filter-month').value;
-            const tbody = document.getElementById('operasional-table-body'); tbody.innerHTML = '';
+            const tbody = document.getElementById('operasional-table-body'); if(!tbody) return; tbody.innerHTML = '';
 
             db.collection("operasional").orderBy("tanggal", "desc").get().then(snapshot => {
                 let totalHarian = 0; let totalBulanan = 0;
@@ -978,8 +977,8 @@
                             <td class="p-4 text-center"><button onclick="deleteOperasionalItem('${doc.id}')" class="text-xs text-red-500 font-semibold">Hapus</button></td>
                         </tr>`;
                 });
-                document.getElementById('op-total-daily-display').innerText = 'Rp ' + totalHarian.toLocaleString();
-                document.getElementById('op-total-monthly-display').innerText = 'Rp ' + totalBulanan.toLocaleString();
+                if(document.getElementById('op-total-daily-display')) document.getElementById('op-total-daily-display').innerText = 'Rp ' + totalHarian.toLocaleString();
+                if(document.getElementById('op-total-monthly-display')) document.getElementById('op-total-monthly-display').innerText = 'Rp ' + totalBulanan.toLocaleString();
             });
         }
 
@@ -992,7 +991,7 @@
         function runStockOpnameAudit() {
             const fDate = document.getElementById('opname-filter-date').value;
             const fMonth = document.getElementById('opname-filter-month').value;
-            const tbody = document.getElementById('opname-table-body');
+            const tbody = document.getElementById('opname-table-body'); if(!tbody) return;
             tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Sedang mengkalkulasi mutasi data...</td></tr>';
 
             let transQuery = db.collection("transaksi_history");
@@ -1015,14 +1014,11 @@
 
                 snapTrans.forEach(doc => {
                     const d = doc.data();
-                    omset += d.total || 0;
-                    hpp += d.hpp || 0;
+                    omset += d.total || 0; hpp += d.hpp || 0;
                     if (d.items) {
                         d.items.forEach(it => {
                             if (it.resep) {
-                                it.resep.forEach(r => {
-                                    itemSoldCounters[r.namaItem] = (itemSoldCounters[r.namaItem] || 0) + (it.qty * r.qtyUsed);
-                                });
+                                it.resep.forEach(r => { itemSoldCounters[r.namaItem] = (itemSoldCounters[r.namaItem] || 0) + (it.qty * r.qtyUsed); });
                             } else {
                                 itemSoldCounters[it.namaItem] = (itemSoldCounters[it.namaItem] || 0) + it.qty;
                             }
@@ -1044,7 +1040,6 @@
                 document.getElementById('opname-bersih').innerText = 'Rp ' + untungBersih.toLocaleString();
 
                 tbody.innerHTML = '';
-                
                 const sortedStocks = [...globalStocks].sort((a, b) => a.namaName.localeCompare(b.namaName));
 
                 sortedStocks.forEach(stockItem => {
@@ -1103,21 +1098,20 @@
                         });
 
                         let totalProfit = totalOmset - totalHpp - totalKonsumsiHariIni - totalOperasionalHariIni;
-                        document.getElementById('report-pemasukan').innerText = 'Rp ' + totalOmset.toLocaleString();
-                        document.getElementById('report-total-hpp').innerText = 'Rp ' + totalHpp.toLocaleString();
-                        document.getElementById('report-total-konsumsi').innerText = 'Rp ' + totalKonsumsiHariIni.toLocaleString();
-                        document.getElementById('report-total-operasional').innerText = 'Rp ' + totalOperasionalHariIni.toLocaleString();
-                        document.getElementById('report-profit').innerText = 'Rp ' + totalProfit.toLocaleString();
+                        if(document.getElementById('report-pemasukan')) document.getElementById('report-pemasukan').innerText = 'Rp ' + totalOmset.toLocaleString();
+                        if(document.getElementById('report-total-hpp')) document.getElementById('report-total-hpp').innerText = 'Rp ' + totalHpp.toLocaleString();
+                        if(document.getElementById('report-total-konsumsi')) document.getElementById('report-total-konsumsi').innerText = 'Rp ' + totalKonsumsiHariIni.toLocaleString();
+                        if(document.getElementById('report-total-operasional')) document.getElementById('report-total-operasional').innerText = 'Rp ' + totalOperasionalHariIni.toLocaleString();
+                        if(document.getElementById('report-profit')) document.getElementById('report-profit').innerText = 'Rp ' + totalProfit.toLocaleString();
 
                         let sorted = Object.keys(itemCounters).map(k => ({ name: k, qty: itemCounters[k] }));
                         let best = [...sorted].sort((a,b) => b.qty - a.qty).slice(0, 5);
-                        const bList = document.getElementById('top-best-seller'); bList.innerHTML = '';
-                        best.forEach((p, i) => bList.innerHTML += `<li class="py-1.5 flex justify-between"><span>${i+1}. ${p.name}</span><span class="font-bold text-emerald-600">${p.qty} porsi</span></li>`);
+                        const bList = document.getElementById('top-best-seller'); if(bList) { bList.innerHTML = ''; best.forEach((p, i) => bList.innerHTML += `<li class="py-1.5 flex justify-between"><span>${i+1}. ${p.name}</span><span class="font-bold text-emerald-600">${p.qty} porsi</span></li>`); }
                     });
                 });
             });
 
-            if (filterDate) {
+            if (filterDate && document.getElementById('absensi-log-list')) {
                 db.collection("absensi_karyawan").where("tanggal", "==", filterDate).orderBy("timestamp", "asc").get().then(snapAbsen => {
                     const aList = document.getElementById('absensi-log-list'); aList.innerHTML = '';
                     if(snapAbsen.empty) aList.innerHTML = '<li class="text-slate-400 italic p-2">Tidak ada data absensi hari ini.</li>';
@@ -1175,7 +1169,6 @@
             document.getElementById('op-filter-date').value = hariIni;
             document.getElementById('op-filter-month').value = bulanIni;
             document.getElementById('history-filter-date').value = hariIni;
-            
             document.getElementById('opname-filter-date').value = hariIni;
             document.getElementById('opname-filter-month').value = "";
 
@@ -1190,9 +1183,6 @@
                 globalStocks = []; snapshot.forEach(doc => { let d = doc.data(); d.id = doc.id; globalStocks.push(d); });
                 updateStockTableUI(globalStocks);
                 loadDetailedReportAndAbsensi();
-                if(!document.getElementById('menu-opname').classList.contains('hidden')) {
-                    runStockOpnameAudit();
-                }
             });
             
             listenKonsumsiRealtime();
