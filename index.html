@@ -761,14 +761,14 @@
             });
         }
 
+        // REVISI CORE: Memperbaiki loading Riwayat Transaksi tanpa memicu error index Firestore
         function loadHistoryData() {
-            // Putuskan listener real-time sebelumnya jika ada agar tidak double data
             if (historyUnsubscribe) historyUnsubscribe();
 
             const filterDate = document.getElementById('history-filter-date').value;
             const filterShift = document.getElementById('history-filter-shift').value;
             const tbody = document.getElementById('history-table-body');
-            tbody.innerHTML = '';
+            tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Memuat arsip nota...</td></tr>';
 
             let query = db.collection("transaksi_history");
 
@@ -779,28 +779,35 @@
                 query = query.where("shift", "==", filterShift);
             }
 
-            // Gunakan onSnapshot agar data riwayat terfilter tetap terupdate secara real-time
-            historyUnsubscribe = query.orderBy("timestamp", "desc").onSnapshot(snapshot => {
+            // PERBAIKAN: Menghapus orderBy() dari Firestore agar tidak crash di tablet
+            historyUnsubscribe = query.onSnapshot(snapshot => {
                 tbody.innerHTML = '';
                 if(snapshot.empty) {
                     tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Tidak ada transaksi ditemukan</td></tr>';
                     return;
                 }
-                snapshot.forEach(doc => {
-                    const data = doc.data();
+
+                // Masukkan data ke array lokal untuk kita urutkan sendiri di memori browser
+                let docs = [];
+                snapshot.forEach(doc => docs.push(doc.data()));
+
+                // Urutkan berdasarkan waktu input (timestamp) terbaru ke terlama
+                docs.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+
+                docs.forEach(data => {
                     let itemsStr = data.items.map(i => `${i.namaItem} (${i.qty})`).join(', ');
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50">
                             <td class="p-4 text-xs font-mono">${data.tanggal}</td>
                             <td class="p-4 text-xs"><span class="px-2 py-0.5 rounded font-bold bg-slate-100 text-slate-700">Shift ${data.shift}</span></td>
                             <td class="p-4 font-bold text-slate-800">${data.meja}</td>
-                            <td class="p-4 text-xs font-medium text-slate-600 truncate max-w-xs">${itemsStr}</td>
+                            <td class="p-4 text-xs font-medium text-slate-600 truncate max-w-xs" title="${itemsStr}">${itemsStr}</td>
                             <td class="p-4 text-right font-black text-emerald-600">Rp ${data.total.toLocaleString()}</td>
                         </tr>`;
                 });
             }, error => {
                 console.log("Error loading history: ", error);
-                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-500 italic">Gagal memuat data (Pastikan Index Firestore telah dibuat)</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-500 italic">Gagal memuat data. Periksa kembali jaringan database Anda.</td></tr>';
             });
         }
 
