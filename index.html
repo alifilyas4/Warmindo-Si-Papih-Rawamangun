@@ -88,6 +88,29 @@
             </section>
 
             <section id="menu-riwayat" class="menu-content hidden space-y-4">
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-950 text-white p-4 rounded-xl shadow-sm">
+                        <p class="text-[10px] font-bold opacity-70 uppercase tracking-wider">Total Terfilter</p>
+                        <h4 class="text-base font-black text-amber-400 mt-1" id="history-summary-total">Rp 0</h4>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">💵 Total Cash (Tunai)</p>
+                        <h4 class="text-base font-black text-slate-900 mt-1" id="history-summary-cash">Rp 0</h4>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">📱 Total QRIS / Dana / OVO</p>
+                        <h4 class="text-base font-black text-blue-600 mt-1" id="history-summary-qris">Rp 0</h4>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🏦 Total Transfer</p>
+                        <h4 class="text-base font-black text-purple-600 mt-1" id="history-summary-transfer">Rp 0</h4>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🔄 Lain-lain</p>
+                        <h4 class="text-base font-black text-slate-500 mt-1" id="history-summary-lain">Rp 0</h4>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-wrap justify-between items-center gap-4">
                         <div>
@@ -898,8 +921,16 @@
 
             historyUnsubscribe = query.onSnapshot(snapshot => {
                 tbody.innerHTML = '';
+                
+                let sumTotal = 0, sumCash = 0, sumQris = 0, sumTransfer = 0, sumLain = 0;
+
                 if(snapshot.empty) {
                     tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Tidak ada transaksi ditemukan</td></tr>';
+                    document.getElementById('history-summary-total').innerText = 'Rp 0';
+                    document.getElementById('history-summary-cash').innerText = 'Rp 0';
+                    document.getElementById('history-summary-qris').innerText = 'Rp 0';
+                    document.getElementById('history-summary-transfer').innerText = 'Rp 0';
+                    document.getElementById('history-summary-lain').innerText = 'Rp 0';
                     return;
                 }
 
@@ -910,13 +941,26 @@
                 docsWithId.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 
                 docsWithId.forEach(data => {
+                    let nominal = data.total || 0;
+                    sumTotal += nominal;
+
+                    const tipePay = data.jenisTransaksi ? data.jenisTransaksi.trim() : "Cash";
+                    if (tipePay === "Cash") {
+                        sumCash += nominal;
+                    } else if (tipePay === "QRIS") {
+                        sumQris += nominal;
+                    } else if (tipePay === "Transfer") {
+                        sumTransfer += nominal;
+                    } else {
+                        sumLain += nominal;
+                    }
+
                     let itemsStr = data.items.map(i => `${i.namaItem} (${i.qty})`).join(', ');
                     let methodColor = "bg-slate-100 text-slate-700";
                     if (data.jenisTransaksi === "QRIS") methodColor = "bg-blue-100 text-blue-700 font-bold";
                     if (data.jenisTransaksi === "Transfer") methodColor = "bg-purple-100 text-purple-700 font-bold";
                     if (data.jenisTransaksi === "Cash") methodColor = "bg-amber-100 text-amber-800 font-bold";
 
-                    // Tombol Hapus hanya dibuat aktif jika user saat ini adalah Admin
                     let actionButton = '';
                     if (currentRole === 'Admin') {
                         actionButton = `<button onclick="deleteTransactionHistory('${data.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs px-3 py-1.5 rounded-xl border border-red-200 transition">Hapus</button>`;
@@ -933,14 +977,19 @@
                                 <span class="text-[10px] inline-block mt-0.5 px-2 py-0.5 rounded ${methodColor}">${data.jenisTransaksi || 'Cash'}</span>
                             </td>
                             <td class="p-4 text-xs font-medium text-slate-600 truncate max-w-xs" title="${itemsStr}">${itemsStr}</td>
-                            <td class="p-4 text-right font-black text-emerald-600">Rp ${data.total.toLocaleString()}</td>
+                            <td class="p-4 text-right font-black text-emerald-600">Rp ${nominal.toLocaleString()}</td>
                             <td class="p-4 text-center">${actionButton}</td>
                         </tr>`;
                 });
+
+                document.getElementById('history-summary-total').innerText = 'Rp ' + sumTotal.toLocaleString();
+                document.getElementById('history-summary-cash').innerText = 'Rp ' + sumCash.toLocaleString();
+                document.getElementById('history-summary-qris').innerText = 'Rp ' + sumQris.toLocaleString();
+                document.getElementById('history-summary-transfer').innerText = 'Rp ' + sumTransfer.toLocaleString();
+                document.getElementById('history-summary-lain').innerText = 'Rp ' + sumLain.toLocaleString();
             });
         }
 
-        // FITUR BARU: SEBAGAI ADMIN DAPAT MENGHAPUS NOTA & MENGEMBALIKAN STOK BARANG SECARA OTOMATIS
         function deleteTransactionHistory(transactionId) {
             if (currentRole !== 'Admin') {
                 return alert('Akses Ditolak! Hanya Akun Admin yang dapat menghapus riwayat transaksi.');
@@ -957,7 +1006,6 @@
                 const txShift = data.shift;
                 const batch = db.batch();
 
-                // Kembalikan stok item berdasarkan resep/komponen yang terjual
                 if (data.items && Array.isArray(data.items)) {
                     data.items.forEach(item => {
                         if (item.resep && Array.isArray(item.resep)) {
@@ -974,13 +1022,10 @@
                     });
                 }
 
-                // Hapus berkas transaksi dari database
                 batch.delete(transRef);
-
                 return batch.commit();
             }).then(() => {
                 alert("Transaksi berhasil dihapus dan stok barang telah dikembalikan secara sinkron!");
-                // Jalankan kembali audit laporan dan opname agar data dashboard langsung terupdate
                 loadDetailedReportAndAbsensi();
                 if (document.getElementById('menu-opname').classList.contains('hidden') === false) {
                     runStockOpnameAudit();
