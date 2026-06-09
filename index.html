@@ -106,7 +106,7 @@
                         <h4 class="text-base font-black text-purple-600 mt-1" id="history-summary-transfer">Rp 0</h4>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🔄 Lain-lain</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🔄 Lain-lain / Split</p>
                         <h4 class="text-base font-black text-slate-500 mt-1" id="history-summary-lain">Rp 0</h4>
                     </div>
                 </div>
@@ -511,14 +511,20 @@
                     </div>
                     <button onclick="addItemToBill()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-sm transition">Masukkan Struk</button>
                 </div>
+                
                 <div class="md:col-span-2 bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between">
                     <div>
                         <h4 class="font-bold text-xs text-slate-500 uppercase tracking-wider border-b pb-2 mb-2">Item Nota</h4>
                         <div id="bill-items-list" class="space-y-2 text-xs max-h-48 overflow-y-auto custom-scroll"></div>
                     </div>
                     <div class="pt-4 border-t mt-4 space-y-3">
+                        <div class="flex items-center gap-2 bg-amber-50 p-2 rounded-lg border border-amber-200">
+                            <input type="checkbox" id="split-bill-checkbox" onchange="toggleSplitBillView()" class="w-4 h-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                            <label for="split-bill-checkbox" class="text-xs font-bold text-amber-900 cursor-pointer select-none">Gunakan Split Bill (2 Metode)</label>
+                        </div>
+
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Jenis Transaksi / Metode</label>
+                            <label id="label-payment-method-1" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Metode Pembayaran (Utama)</label>
                             <select id="order-payment-method" class="w-full mt-1 p-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-red-500">
                                 <option value="Cash">Cash (Tunai)</option>
                                 <option value="QRIS">QRIS / Dana / OVO</option>
@@ -526,6 +532,27 @@
                                 <option value="Lain-lain">Lain-lain</option>
                             </select>
                         </div>
+
+                        <div id="split-bill-fields" class="hidden space-y-3 border-t pt-2 border-dashed border-slate-300">
+                            <div>
+                                <label class="block text-[10px] font-bold text-amber-700 uppercase tracking-wider">Nominal Bayar Metode 1 (Rp)</label>
+                                <input type="number" id="split-amount-1" oninput="calculateSplitBillRemaining()" class="w-full mt-1 p-2 bg-white border border-amber-200 rounded-lg text-xs font-bold text-slate-800" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-700 uppercase tracking-wider">Metode Pembayaran Kedua</label>
+                                <select id="order-payment-method-2" class="w-full mt-1 p-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <option value="QRIS">QRIS / Dana / OVO</option>
+                                    <option value="Cash">Cash (Tunai)</option>
+                                    <option value="Transfer">Transfer Bank</option>
+                                    <option value="Lain-lain">Lain-lain</option>
+                                </select>
+                            </div>
+                            <div class="bg-blue-50 p-2 rounded-lg border border-blue-100 flex justify-between items-center">
+                                <span class="text-[10px] font-bold text-blue-800 uppercase">Sisa Tagihan (Metode 2):</span>
+                                <span id="split-remaining-display" class="text-xs font-black text-blue-700">Rp 0</span>
+                            </div>
+                        </div>
+
                         <div class="flex justify-between font-black text-sm text-red-600 mb-2"><span>TOTAL:</span><span id="bill-total-display">Rp 0</span></div>
                         <div class="grid grid-cols-1 gap-2">
                             <button onclick="saveOpenBill()" class="bg-amber-500 text-slate-900 font-bold py-2.5 rounded-xl text-xs">Simpan Draft</button>
@@ -555,6 +582,7 @@
         let activeBillItems = [], globalStocks = [];
         let namaKaryawan1 = "Karyawan 1", namaKaryawan2 = "Karyawan 2";
         let historyUnsubscribe = null;
+        let globalBillTotal = 0; // Menyimpan nilai total tagihan aktif
 
         setInterval(() => {
             const now = new Date();
@@ -571,7 +599,7 @@
         const userDatabase = {
             "admin": { pin: "1111", role: "Admin" },
             "saipul": { pin: "5678", role: "Karyawan" },
-            "bimo": { pin: "4321", role: "Karyawan" },
+            "aris": { pin: "9876", role: "Karyawan" },
             "anton": { pin: "2468", role: "Karyawan" }
         };
 
@@ -663,11 +691,49 @@
             document.getElementById('order-addon-search').value = '';
             document.getElementById('order-payment-method').value = 'Cash';
             
+            // Reset Fitur Split Bill ke Default Semula
+            document.getElementById('split-bill-checkbox').checked = false;
+            document.getElementById('split-amount-1').value = '';
+            document.getElementById('order-payment-method-2').value = 'QRIS';
+            document.getElementById('label-payment-method-1').innerText = "Metode Pembayaran (Utama)";
+            document.getElementById('split-bill-fields').classList.add('hidden');
+            document.getElementById('split-remaining-display').innerText = 'Rp 0';
+
             filterDropdownMenu();
             renderActiveBillItems();
         }
 
         function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
+
+        // LOGIKA INTERAKTIF UI SPLIT BILL
+        function toggleSplitBillView() {
+            const isChecked = document.getElementById('split-bill-checkbox').checked;
+            const splitFields = document.getElementById('split-bill-fields');
+            const labelMetode1 = document.getElementById('label-payment-method-1');
+
+            if (isChecked) {
+                splitFields.classList.remove('hidden');
+                labelMetode1.innerText = "Metode Pembayaran Pertama";
+                calculateSplitBillRemaining();
+            } else {
+                splitFields.classList.add('hidden');
+                labelMetode1.innerText = "Metode Pembayaran (Utama)";
+            }
+        }
+
+        function calculateSplitBillRemaining() {
+            const amount1 = parseInt(document.getElementById('split-amount-1').value) || 0;
+            const remaining = globalBillTotal - amount1;
+            const remainingDisplay = document.getElementById('split-remaining-display');
+
+            if (remaining < 0) {
+                remainingDisplay.innerText = "Nominal Berlebih!";
+                remainingDisplay.className = "text-xs font-black text-red-600";
+            } else {
+                remainingDisplay.innerText = "Rp " + remaining.toLocaleString();
+                remainingDisplay.className = "text-xs font-black text-blue-700";
+            }
+        }
 
         function filterDropdownMenu() {
             const mainSearch = document.getElementById('order-item-search').value.toLowerCase().trim();
@@ -675,7 +741,7 @@
             
             const selectOrder = document.getElementById('order-item-select');
             const selectAddon = document.getElementById('order-addon-select');
-            const selectKonsumsi = document.getElementById('konsumsi-item-select'); // Input Dropdown Baru di Form Konsumsi
+            const selectKonsumsi = document.getElementById('konsumsi-item-select');
             
             const previousSelectedMain = selectOrder ? selectOrder.value : '';
             const previousSelectedAddon = selectAddon ? selectAddon.value : '';
@@ -690,7 +756,6 @@
                 const kat = item.kategori || "Utama";
                 const itemLabelName = item.namaName.toLowerCase();
 
-                // Isi Dropdown kasir
                 if (kat === "Utama") {
                     if (selectOrder && (mainSearch === "" || itemLabelName.includes(mainSearch))) {
                         selectOrder.innerHTML += `<option value="${item.id}">${item.namaName} (Sisa: ${item.qty})</option>`;
@@ -701,7 +766,6 @@
                     }
                 }
 
-                // Isi Dropdown Jatah Makan Konsumsi Karyawan (Semua bahan utama/topping terdaftar)
                 if(selectKonsumsi) {
                     selectKonsumsi.innerHTML += `<option value="${item.id}">${item.namaName} (Stok: ${item.qty} Pcs)</option>`;
                 }
@@ -720,9 +784,9 @@
 
         function renderActiveBillItems() {
             const container = document.getElementById('bill-items-list'); container.innerHTML = '';
-            let total = 0;
+            globalBillTotal = 0;
             activeBillItems.forEach((item, index) => {
-                total += item.hargaJual * item.qty;
+                globalBillTotal += item.hargaJual * item.qty;
                 container.innerHTML += `
                     <div class="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-200">
                         <div>
@@ -733,7 +797,8 @@
                     </div>
                 `;
             });
-            document.getElementById('bill-total-display').innerText = 'Rp ' + total.toLocaleString();
+            document.getElementById('bill-total-display').innerText = 'Rp ' + globalBillTotal.toLocaleString();
+            calculateSplitBillRemaining();
         }
 
         function addItemToBill() {
@@ -795,10 +860,8 @@
             }
 
             renderActiveBillItems();
-            
             selectAddon.value = '';
             document.getElementById('order-addon-search').value = '';
-            
             filterDropdownMenu();
         }
 
@@ -812,13 +875,34 @@
             }).then(() => { closeOrderModal(); });
         }
 
+        // PROSES PEMBAYARAN CHECKOUT + LOGIKA MULTI METODE (SPLIT BILL)
         function checkoutBill() {
             if (!selectedTable || activeBillItems.length === 0) return;
             let total = activeBillItems.reduce((acc, curr) => acc + (curr.hargaJual * curr.qty), 0);
             let totalModal = activeBillItems.reduce((acc, curr) => acc + (curr.hargaModal * curr.qty), 0);
             let profit = total - totalModal;
 
-            const paymentMethod = document.getElementById('order-payment-method').value;
+            let finalPaymentMethodLabel = "";
+            const isSplitBillActive = document.getElementById('split-bill-checkbox').checked;
+
+            if (isSplitBillActive) {
+                const amount1 = parseInt(document.getElementById('split-amount-1').value) || 0;
+                const method1 = document.getElementById('order-payment-method').value;
+                const method2 = document.getElementById('order-payment-method-2').value;
+                const amount2 = total - amount1;
+
+                if (amount1 <= 0 || amount1 >= total) {
+                    return alert("Gagal! Nominal pembayaran pertama harus di antara Rp 1 s/d total tagihan.");
+                }
+                if (method1 === method2) {
+                    return alert("Gagal! Pilih metode kedua yang berbeda untuk pembagian split bill.");
+                }
+
+                // Format String Gabungan: "Cash (Rp 10.000) + QRIS (Rp 15.000)"
+                finalPaymentMethodLabel = `${method1} (Rp ${amount1.toLocaleString()}) + ${method2} (Rp ${amount2.toLocaleString()})`;
+            } else {
+                finalPaymentMethodLabel = document.getElementById('order-payment-method').value;
+            }
 
             const batch = db.batch();
             activeBillItems.forEach(item => {
@@ -839,7 +923,7 @@
             
             batch.set(db.collection("transaksi_history").doc(), {
                 meja: selectedTable, items: activeBillItems, total: total, hpp: totalModal, profit: profit,
-                shift: currentShift, tanggal: dateStr, bulan: monthStr, jenisTransaksi: paymentMethod, 
+                shift: currentShift, tanggal: dateStr, bulan: monthStr, jenisTransaksi: finalPaymentMethodLabel, 
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
             batch.delete(db.collection("bills").doc(selectedTable));
@@ -974,9 +1058,7 @@
                 }
 
                 let docsWithId = [];
-                snapshot.forEach(doc => {
-                    docsWithId.push({ id: doc.id, ...doc.data() });
-                });
+                snapshot.forEach(doc => { docsWithId.push({ id: doc.id, ...doc.data() }); });
                 docsWithId.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 
                 docsWithId.forEach(data => {
@@ -984,7 +1066,11 @@
                     sumTotal += nominal;
 
                     const tipePay = data.jenisTransaksi ? data.jenisTransaksi.trim() : "Cash";
-                    if (tipePay === "Cash") {
+                    
+                    // SINKRONISASI FILTER RESUMEN METODE UNTUK TRANSAKSI GABUNGAN (SPLIT BILL)
+                    if (tipePay.includes("+")) {
+                        sumLain += nominal; 
+                    } else if (tipePay === "Cash") {
                         sumCash += nominal;
                     } else if (tipePay === "QRIS") {
                         sumQris += nominal;
@@ -995,10 +1081,17 @@
                     }
 
                     let itemsStr = data.items.map(i => `${i.namaItem} (${i.qty})`).join(', ');
+                    
                     let methodColor = "bg-slate-100 text-slate-700";
-                    if (data.jenisTransaksi === "QRIS") methodColor = "bg-blue-100 text-blue-700 font-bold";
-                    if (data.jenisTransaksi === "Transfer") methodColor = "bg-purple-100 text-purple-700 font-bold";
-                    if (data.jenisTransaksi === "Cash") methodColor = "bg-amber-100 text-amber-800 font-bold";
+                    if (tipePay.includes("+")) {
+                        methodColor = "bg-amber-50 text-amber-700 font-bold border border-amber-300";
+                    } else if (data.jenisTransaksi === "QRIS") {
+                        methodColor = "bg-blue-100 text-blue-700 font-bold";
+                    } else if (data.jenisTransaksi === "Transfer") {
+                        methodColor = "bg-purple-100 text-purple-700 font-bold";
+                    } else if (data.jenisTransaksi === "Cash") {
+                        methodColor = "bg-amber-100 text-amber-800 font-bold";
+                    }
 
                     let actionButton = '';
                     if (currentRole === 'Admin') {
@@ -1118,7 +1211,6 @@
                     if (data.tanggal === filterDate) totalHarian += data.biaya;
                     if (data.bulan === filterMonth) totalBulanan += data.biaya;
 
-                    // PERBAIKAN REQUES 1: Sembunyikan tombol hapus jika role adalah Karyawan
                     let actionBtn = '';
                     if (currentRole === 'Admin') {
                         actionBtn = `<button onclick="deleteOperasionalItem('${doc.id}')" class="text-xs text-red-500 font-semibold hover:underline">Hapus</button>`;
@@ -1184,7 +1276,6 @@
                     }
                 });
 
-                // Masukkan hitungan produk dari konsumsi karyawan ke mutasi keluar agar singkron di opname
                 snapKonsumsi.forEach(doc => { 
                     const dataK = doc.data();
                     biayaKonsumsi += dataK.biaya || 0; 
@@ -1296,7 +1387,6 @@
             document.querySelectorAll('.label-name-k2').forEach(el => el.innerText = namaKaryawan2);
         }
 
-        // PERBAIKAN REQUEST 2: Fitur Potong Stok Otomatis Saat Karyawan Ambil Makan
         function saveKonsumsiKaryawan() {
             const selectValue = document.getElementById('konsumsi-user').value;
             const staffLabel = selectValue === 'Karyawan 1' ? namaKaryawan1 : namaKaryawan2;
@@ -1308,26 +1398,21 @@
             if (!itemId) return alert('Silakan pilih item menu/bahan terlebih dahulu!');
             if (qtyItem <= 0) return alert('Kuantitas item tidak valid!');
 
-            // Cari data produk di dalam array lokal globalStocks
             const targetStockItem = globalStocks.find(s => s.id === itemId);
             if (!targetStockItem) return alert('Item tidak ditemukan di sistem database stok!');
             if (targetStockItem.qty < qtyItem) return alert(`Stok tidak cukup! Sisa stok untuk ${targetStockItem.namaName} adalah ${targetStockItem.qty} Pcs`);
 
-            // Jika form harga manual kosong, bypass otomatis mengambil harga jual produk asli
             if(isNaN(harga) || harga <= 0) {
                 harga = targetStockItem.hargaJual * qtyItem;
             }
 
             const batch = db.batch();
-
-            // 1. Eksekusi Pengurangan Stok Real-time & Tambah data ke log Shift Out
             const stockRef = db.collection("stocks").doc(itemId);
             batch.update(stockRef, {
                 qty: firebase.firestore.FieldValue.increment(-qtyItem),
                 [`shiftOut_${currentShift}`]: firebase.firestore.FieldValue.increment(qtyItem)
             });
 
-            // 2. Kirim berkas data pencatatan ke koleksi "konsumsi"
             const newKonsumsiRef = db.collection("konsumsi").doc();
             batch.set(newKonsumsiRef, {
                 slotKey: selectValue, 
@@ -1341,7 +1426,6 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            // Commit Batch transaksi Firestore secara atomik
             batch.commit().then(() => {
                 document.getElementById('konsumsi-qty').value = '1'; 
                 document.getElementById('konsumsi-harga').value = '';
@@ -1352,7 +1436,6 @@
             });
         }
 
-        // PERBAIKAN REQUEST 2: Tambah Fitur Rendering Log Riwayat Konsumsi Realtime (Hari Ini)
         function listenKonsumsiRealtime() {
             const hariIniStr = new Date().toISOString().split('T')[0];
             
@@ -1362,15 +1445,11 @@
                 if(tbody) tbody.innerHTML = '';
 
                 let counterLog = 0;
-
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    
-                    // Hitung akumulasi budget limit
                     if(data.slotKey === 'Karyawan 1') k1 += data.biaya;
                     if(data.slotKey === 'Karyawan 2') k2 += data.biaya;
 
-                    // Render ke tabel log jika datanya terjadi hari ini
                     if(data.tanggal === hariIniStr && tbody) {
                         counterLog++;
                         tbody.innerHTML += `
@@ -1380,8 +1459,7 @@
                                 <td class="p-4 font-bold text-slate-800">${data.karyawan}</td>
                                 <td class="p-4 text-slate-600 font-medium">${data.namaMenuStr || 'Menu'} (x${data.qtyItem || 1})</td>
                                 <td class="p-4 text-right font-black text-amber-600">Rp ${(data.biaya || 0).toLocaleString()}</td>
-                            </tr>
-                        `;
+                            </tr>`;
                     }
                 });
 
