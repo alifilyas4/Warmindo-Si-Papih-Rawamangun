@@ -139,7 +139,7 @@
                                     <th class="p-4">Tanggal / Waktu</th>
                                     <th class="p-4">Shift</th>
                                     <th class="p-4">Lokasi/Meja / Jenis</th>
-                                    <th class="p-4">Daftar Item Belanja + Kustomisasi</th>
+                                    <th class="p-4 'daftar-item'">Daftar Item Belanja + Kustomisasi</th>
                                     <th class="p-4 text-right">Total Nominal</th>
                                     <th class="p-4 text-center">Aksi</th>
                                 </tr>
@@ -179,17 +179,50 @@
                 </div>
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                     <h3 class="font-bold text-slate-900 mb-4">Form Pencatatan Makan Operasional</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                         <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Pilih Karyawan</label>
                             <select id="konsumsi-user" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm">
                                 <option value="Karyawan 1" id="opt-k1">Karyawan 1</option>
                                 <option value="Karyawan 2" id="opt-k2">Karyawan 2</option>
                             </select>
                         </div>
-                        <div><input type="text" id="konsumsi-item" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm" placeholder="Contoh: Nasi Goreng + Es Teh"></div>
-                        <div><input type="number" id="konsumsi-harga" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm" placeholder="Total Biaya"></div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Item Produk (Mengurangi Stok)</label>
+                            <select id="konsumsi-item-select" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Kuantitas (Qty)</label>
+                            <input type="number" id="konsumsi-qty" value="1" min="1" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm" placeholder="Jumlah">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Harga Manual / Subsidi (Rp)</label>
+                            <input type="number" id="konsumsi-harga" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm" placeholder="Otomatis jika kosong">
+                        </div>
                     </div>
-                    <button onclick="saveKonsumsiKaryawan()" class="mt-5 bg-slate-950 text-white font-bold px-6 py-2.5 rounded-xl text-sm">Input Jatah Makan</button>
+                    <button onclick="saveKonsumsiKaryawan()" class="mt-5 bg-slate-950 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-sm hover:bg-slate-800 transition">Input Jatah Makan</button>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+                        <h3 class="font-bold text-slate-900 text-sm">Log Histori Konsumsi Karyawan Hari Ini</h3>
+                    </div>
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-slate-100/70 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                                    <th class="p-4">Tanggal</th>
+                                    <th class="p-4">Shift</th>
+                                    <th class="p-4">Nama Karyawan</th>
+                                    <th class="p-4">Menu / Deskripsi</th>
+                                    <th class="p-4 text-right">Potongan Dana</th>
+                                </tr>
+                            </thead>
+                            <tbody id="konsumsi-table-body" class="divide-y divide-slate-100 text-sm text-slate-700">
+                                <tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Memuat data konsumsi...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
@@ -642,12 +675,14 @@
             
             const selectOrder = document.getElementById('order-item-select');
             const selectAddon = document.getElementById('order-addon-select');
+            const selectKonsumsi = document.getElementById('konsumsi-item-select'); // Input Dropdown Baru di Form Konsumsi
             
-            const previousSelectedMain = selectOrder.value;
-            const previousSelectedAddon = selectAddon.value;
+            const previousSelectedMain = selectOrder ? selectOrder.value : '';
+            const previousSelectedAddon = selectAddon ? selectAddon.value : '';
 
-            selectOrder.innerHTML = '<option value="">-- Pilih Menu Utama --</option>';
-            selectAddon.innerHTML = '<option value="">-- Tanpa Tambahan --</option>';
+            if(selectOrder) selectOrder.innerHTML = '<option value="">-- Pilih Menu Utama --</option>';
+            if(selectAddon) selectAddon.innerHTML = '<option value="">-- Tanpa Tambahan --</option>';
+            if(selectKonsumsi) selectKonsumsi.innerHTML = '<option value="">-- Pilih Menu/Bahan --</option>';
 
             const sortedStocks = [...globalStocks].sort((a, b) => a.namaName.localeCompare(b.namaName));
 
@@ -655,19 +690,25 @@
                 const kat = item.kategori || "Utama";
                 const itemLabelName = item.namaName.toLowerCase();
 
+                // Isi Dropdown kasir
                 if (kat === "Utama") {
-                    if (mainSearch === "" || itemLabelName.includes(mainSearch)) {
+                    if (selectOrder && (mainSearch === "" || itemLabelName.includes(mainSearch))) {
                         selectOrder.innerHTML += `<option value="${item.id}">${item.namaName} (Sisa: ${item.qty})</option>`;
                     }
                 } else if (kat === "Topping") {
-                    if (addonSearch === "" || itemLabelName.includes(addonSearch)) {
+                    if (selectAddon && (addonSearch === "" || itemLabelName.includes(addonSearch))) {
                         selectAddon.innerHTML += `<option value="${item.id}">+ ${item.namaName} (+Rp ${item.hargaJual.toLocaleString()})</option>`;
                     }
                 }
+
+                // Isi Dropdown Jatah Makan Konsumsi Karyawan (Semua bahan utama/topping terdaftar)
+                if(selectKonsumsi) {
+                    selectKonsumsi.innerHTML += `<option value="${item.id}">${item.namaName} (Stok: ${item.qty} Pcs)</option>`;
+                }
             });
 
-            selectOrder.value = previousSelectedMain;
-            selectAddon.value = previousSelectedAddon;
+            if(selectOrder) selectOrder.value = previousSelectedMain;
+            if(selectAddon) selectAddon.value = previousSelectedAddon;
         }
 
         function isRecipeEqual(arr1, arr2) {
@@ -891,9 +932,7 @@
                     </tr>`;
             });
             
-            if (document.getElementById('order-modal') && !document.getElementById('order-modal').classList.contains('hidden')) {
-                filterDropdownMenu();
-            }
+            filterDropdownMenu();
         }
 
         function deleteStockItem(id, name) {
@@ -1079,13 +1118,21 @@
                     if (data.tanggal === filterDate) totalHarian += data.biaya;
                     if (data.bulan === filterMonth) totalBulanan += data.biaya;
 
+                    // PERBAIKAN REQUES 1: Sembunyikan tombol hapus jika role adalah Karyawan
+                    let actionBtn = '';
+                    if (currentRole === 'Admin') {
+                        actionBtn = `<button onclick="deleteOperasionalItem('${doc.id}')" class="text-xs text-red-500 font-semibold hover:underline">Hapus</button>`;
+                    } else {
+                        actionBtn = `<span class="text-xs text-slate-400 italic">No Access</span>`;
+                    }
+
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50">
                             <td class="p-4 font-mono text-xs">${data.tanggal}</td>
                             <td class="p-4 text-xs"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold">Shift ${data.shift}</span></td>
                             <td class="p-4 font-bold text-slate-900">${data.nama}</td>
                             <td class="p-4 text-right font-bold text-red-600">Rp ${data.biaya.toLocaleString()}</td>
-                            <td class="p-4 text-center"><button onclick="deleteOperasionalItem('${doc.id}')" class="text-xs text-red-500 font-semibold">Hapus</button></td>
+                            <td class="p-4 text-center">${actionBtn}</td>
                         </tr>`;
                 });
                 if(document.getElementById('op-total-daily-display')) document.getElementById('op-total-daily-display').innerText = 'Rp ' + totalHarian.toLocaleString();
@@ -1137,8 +1184,16 @@
                     }
                 });
 
+                // Masukkan hitungan produk dari konsumsi karyawan ke mutasi keluar agar singkron di opname
+                snapKonsumsi.forEach(doc => { 
+                    const dataK = doc.data();
+                    biayaKonsumsi += dataK.biaya || 0; 
+                    if(dataK.namaMenuStr && dataK.qtyItem) {
+                        itemSoldCounters[dataK.namaMenuStr] = (itemSoldCounters[dataK.namaMenuStr] || 0) + dataK.qtyItem;
+                    }
+                });
+
                 snapOp.forEach(doc => { biayaOp += doc.data().biaya || 0; });
-                snapKonsumsi.forEach(doc => { biayaKonsumsi += doc.data().biaya || 0; });
 
                 let untungKotor = omset - hpp;
                 let untungBersih = untungKotor - biayaOp - biayaKonsumsi;
@@ -1241,29 +1296,99 @@
             document.querySelectorAll('.label-name-k2').forEach(el => el.innerText = namaKaryawan2);
         }
 
+        // PERBAIKAN REQUEST 2: Fitur Potong Stok Otomatis Saat Karyawan Ambil Makan
         function saveKonsumsiKaryawan() {
             const selectValue = document.getElementById('konsumsi-user').value;
             const staffLabel = selectValue === 'Karyawan 1' ? namaKaryawan1 : namaKaryawan2;
-            const item = document.getElementById('konsumsi-item').value.trim();
-            const harga = parseInt(document.getElementById('konsumsi-harga').value);
+            const itemId = document.getElementById('konsumsi-item-select').value;
+            const qtyItem = parseInt(document.getElementById('konsumsi-qty').value) || 1;
+            let harga = parseInt(document.getElementById('konsumsi-harga').value);
             const dateStr = new Date().toISOString().split('T')[0];
 
-            if (!item || isNaN(harga) || harga <= 0) return alert('Data jatah makan tidak valid!');
-            db.collection("konsumsi").add({
-                slotKey: selectValue, karyawan: staffLabel, item: item, biaya: harga, shift: currentShift, tanggal: dateStr, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('konsumsi-item').value = ''; document.getElementById('konsumsi-harga').value = '';
-                alert('Jatah makan berhasil dimasukkan!');
+            if (!itemId) return alert('Silakan pilih item menu/bahan terlebih dahulu!');
+            if (qtyItem <= 0) return alert('Kuantitas item tidak valid!');
+
+            // Cari data produk di dalam array lokal globalStocks
+            const targetStockItem = globalStocks.find(s => s.id === itemId);
+            if (!targetStockItem) return alert('Item tidak ditemukan di sistem database stok!');
+            if (targetStockItem.qty < qtyItem) return alert(`Stok tidak cukup! Sisa stok untuk ${targetStockItem.namaName} adalah ${targetStockItem.qty} Pcs`);
+
+            // Jika form harga manual kosong, bypass otomatis mengambil harga jual produk asli
+            if(isNaN(harga) || harga <= 0) {
+                harga = targetStockItem.hargaJual * qtyItem;
+            }
+
+            const batch = db.batch();
+
+            // 1. Eksekusi Pengurangan Stok Real-time & Tambah data ke log Shift Out
+            const stockRef = db.collection("stocks").doc(itemId);
+            batch.update(stockRef, {
+                qty: firebase.firestore.FieldValue.increment(-qtyItem),
+                [`shiftOut_${currentShift}`]: firebase.firestore.FieldValue.increment(qtyItem)
+            });
+
+            // 2. Kirim berkas data pencatatan ke koleksi "konsumsi"
+            const newKonsumsiRef = db.collection("konsumsi").doc();
+            batch.set(newKonsumsiRef, {
+                slotKey: selectValue, 
+                karyawan: staffLabel, 
+                itemId: itemId,
+                namaMenuStr: targetStockItem.namaName,
+                qtyItem: qtyItem,
+                biaya: harga, 
+                shift: currentShift, 
+                tanggal: dateStr, 
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            // Commit Batch transaksi Firestore secara atomik
+            batch.commit().then(() => {
+                document.getElementById('konsumsi-qty').value = '1'; 
+                document.getElementById('konsumsi-harga').value = '';
+                alert(`Jatah makan ${targetStockItem.namaName} x${qtyItem} berhasil dimasukkan dan stok telah dipotong!`);
+            }).catch(err => {
+                console.error("Gagal memotong stok konsumsi:", err);
+                alert("Terjadi kesalahan koneksi sistem database.");
             });
         }
 
+        // PERBAIKAN REQUEST 2: Tambah Fitur Rendering Log Riwayat Konsumsi Realtime (Hari Ini)
         function listenKonsumsiRealtime() {
+            const hariIniStr = new Date().toISOString().split('T')[0];
+            
             db.collection("konsumsi").onSnapshot(snapshot => {
                 let k1 = 0, k2 = 0;
+                const tbody = document.getElementById('konsumsi-table-body');
+                if(tbody) tbody.innerHTML = '';
+
+                let counterLog = 0;
+
                 snapshot.forEach(doc => {
-                    if(doc.data().slotKey === 'Karyawan 1') k1 += doc.data().biaya;
-                    if(doc.data().slotKey === 'Karyawan 2') k2 += doc.data().biaya;
+                    const data = doc.data();
+                    
+                    // Hitung akumulasi budget limit
+                    if(data.slotKey === 'Karyawan 1') k1 += data.biaya;
+                    if(data.slotKey === 'Karyawan 2') k2 += data.biaya;
+
+                    // Render ke tabel log jika datanya terjadi hari ini
+                    if(data.tanggal === hariIniStr && tbody) {
+                        counterLog++;
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-4 font-mono text-xs">${data.tanggal}</td>
+                                <td class="p-4 text-xs"><span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-bold">Shift ${data.shift}</span></td>
+                                <td class="p-4 font-bold text-slate-800">${data.karyawan}</td>
+                                <td class="p-4 text-slate-600 font-medium">${data.namaMenuStr || 'Menu'} (x${data.qtyItem || 1})</td>
+                                <td class="p-4 text-right font-black text-amber-600">Rp ${(data.biaya || 0).toLocaleString()}</td>
+                            </tr>
+                        `;
+                    }
                 });
+
+                if(tbody && counterLog === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Belum ada jatah makan karyawan yang diinput hari ini.</td></tr>';
+                }
+
                 document.getElementById('k1-used').innerText = `Rp ${k1.toLocaleString()}`;
                 document.getElementById('k2-used').innerText = `Rp ${k2.toLocaleString()}`;
                 document.getElementById('bar-k1').style.width = Math.min((k1 / 150000) * 100, 100) + '%';
