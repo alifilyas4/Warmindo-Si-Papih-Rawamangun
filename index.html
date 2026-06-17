@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
@@ -139,7 +139,7 @@
                                     <th class="p-4">Tanggal / Waktu</th>
                                     <th class="p-4">Shift</th>
                                     <th class="p-4">Lokasi/Meja / Jenis</th>
-                                    <th class="p-4 'daftar-item'">Daftar Item Belanja + Kustomisasi</th>
+                                    <th class="p-4">Daftar Item Belanja + Kustomisasi</th>
                                     <th class="p-4 text-right">Total Nominal</th>
                                     <th class="p-4 text-center">Aksi</th>
                                 </tr>
@@ -582,13 +582,15 @@
         let activeBillItems = [], globalStocks = [];
         let namaKaryawan1 = "Karyawan 1", namaKaryawan2 = "Karyawan 2";
         let historyUnsubscribe = null;
-        let globalBillTotal = 0; // Menyimpan nilai total tagihan aktif
+        let globalBillTotal = 0; 
 
+        // JAM DIGITAL REALTIME
         setInterval(() => {
             const now = new Date();
             document.getElementById('digital-clock').innerText = now.toTimeString().split(' ')[0];
         }, 1000);
 
+        // PENENTUAN SHIFT KERJA OTOMATIS
         function determineShift() {
             const hour = new Date().getHours();
             if (hour >= 8 && hour < 17) return "1";
@@ -658,6 +660,7 @@
             
             if (menuId === 'opname') runStockOpnameAudit();
             if (menuId === 'riwayat') loadHistoryData();
+            if (menuId === 'laporan') loadDetailedReportAndAbsensi();
         }
 
         const tables = [];
@@ -691,7 +694,6 @@
             document.getElementById('order-addon-search').value = '';
             document.getElementById('order-payment-method').value = 'Cash';
             
-            // Reset Fitur Split Bill ke Default Semula
             document.getElementById('split-bill-checkbox').checked = false;
             document.getElementById('split-amount-1').value = '';
             document.getElementById('order-payment-method-2').value = 'QRIS';
@@ -705,7 +707,6 @@
 
         function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
 
-        // LOGIKA INTERAKTIF UI SPLIT BILL
         function toggleSplitBillView() {
             const isChecked = document.getElementById('split-bill-checkbox').checked;
             const splitFields = document.getElementById('split-bill-fields');
@@ -767,7 +768,9 @@
                 }
 
                 if(selectKonsumsi) {
-                    selectKonsumsi.innerHTML += `<option value="${item.id}">${item.namaName} (Stok: ${item.qty} Pcs)</option>`;
+                    if (itemLabelName.includes(mainSearch) || itemLabelName.includes(addonSearch) || (mainSearch === "" && addonSearch === "")) {
+                        selectKonsumsi.innerHTML += `<option value="${item.id}">${item.namaName} (Stok: ${item.qty} Pcs)</option>`;
+                    }
                 }
             });
 
@@ -875,7 +878,6 @@
             }).then(() => { closeOrderModal(); });
         }
 
-        // PROSES PEMBAYARAN CHECKOUT + LOGIKA MULTI METODE (SPLIT BILL)
         function checkoutBill() {
             if (!selectedTable || activeBillItems.length === 0) return;
             let total = activeBillItems.reduce((acc, curr) => acc + (curr.hargaJual * curr.qty), 0);
@@ -897,8 +899,6 @@
                 if (method1 === method2) {
                     return alert("Gagal! Pilih metode kedua yang berbeda untuk pembagian split bill.");
                 }
-
-                // Format String Gabungan: "Cash (Rp 10.000) + QRIS (Rp 15.000)"
                 finalPaymentMethodLabel = `${method1} (Rp ${amount1.toLocaleString()}) + ${method2} (Rp ${amount2.toLocaleString()})`;
             } else {
                 finalPaymentMethodLabel = document.getElementById('order-payment-method').value;
@@ -946,14 +946,15 @@
 
             if(!name || isNaN(modal) || isNaN(jual)) return alert('Isi form dengan lengkap!');
 
+            const selectedShiftFilter = document.getElementById('stock-filter-shift').value;
+            const targetShift = selectedShiftFilter === 'CURRENT' ? currentShift : selectedShiftFilter;
+
             if(id) {
                 const ref = db.collection("stocks").doc(id);
                 db.runTransaction(transaction => {
                     return transaction.get(ref).then(doc => {
                         const currentData = doc.data();
                         const oldQty = currentData.qty || 0;
-                        const selectedShiftFilter = document.getElementById('stock-filter-shift').value;
-                        const targetShift = selectedShiftFilter === 'CURRENT' ? currentShift : selectedShiftFilter;
                         const existingIn = currentData[`shiftIn_${targetShift}`] || 0;
                         
                         transaction.update(ref, {
@@ -963,9 +964,6 @@
                     });
                 }).then(() => { alert('Bahan Terupdate!'); resetStockForm(); });
             } else {
-                const selectedShiftFilter = document.getElementById('stock-filter-shift').value;
-                const targetShift = selectedShiftFilter === 'CURRENT' ? currentShift : selectedShiftFilter;
-                
                 db.collection("stocks").add({ 
                     namaName: name, kategori: kategori, hargaModal: modal, hargaJual: jual, qty: additiveIn,
                     [`shiftIn_${targetShift}`]: additiveIn, [`shiftOut_${targetShift}`]: 0, [`shiftInit_${targetShift}`]: 0
@@ -1067,7 +1065,6 @@
 
                     const tipePay = data.jenisTransaksi ? data.jenisTransaksi.trim() : "Cash";
                     
-                    // SINKRONISASI FILTER RESUMEN METODE UNTUK TRANSAKSI GABUNGAN (SPLIT BILL)
                     if (tipePay.includes("+")) {
                         sumLain += nominal; 
                     } else if (tipePay === "Cash") {
@@ -1127,7 +1124,7 @@
                 return alert('Akses Ditolak! Hanya Akun Admin yang dapat menghapus riwayat transaksi.');
             }
 
-            if (!confirm("Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini akan mengembalikan jumlah stok barang yang terjual dan mereduksi pencatatan laporan secara permanen.")) return;
+            if (!confirm("Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini akan mengembalikan jumlah stok barang yang terjual.")) return;
 
             const transRef = db.collection("transaksi_history").doc(transactionId);
 
@@ -1157,13 +1154,13 @@
                 batch.delete(transRef);
                 return batch.commit();
             }).then(() => {
-                alert("Transaksi berhasil dihapus dan stok barang telah dikembalikan secara sinkron!");
+                alert("Transaksi berhasil dihapus dan stok barang telah dikembalikan!");
                 loadDetailedReportAndAbsensi();
-                if (document.getElementById('menu-opname').classList.contains('hidden') === false) {
+                if (!document.getElementById('menu-opname').classList.contains('hidden')) {
                     runStockOpnameAudit();
                 }
             }).catch(err => {
-                console.error("Error menghapus riwayat transaksi: ", err);
+                console.error(err);
                 alert("Terjadi kesalahan sistem saat mencoba menghapus transaksi.");
             });
         }
@@ -1174,12 +1171,14 @@
             document.getElementById('stock-kategori').value = kategori || "Utama";
             document.getElementById('stock-modal').value = modal;
             document.getElementById('stock-jual').value = jual;
+            document.getElementById('stock-form-title').innerText = "Edit Bahan & Produk";
         }
 
         function resetStockForm() {
             document.getElementById('stock-id').value = ''; document.getElementById('stock-name').value = '';
             document.getElementById('stock-modal').value = ''; document.getElementById('stock-jual').value = '';
             document.getElementById('stock-qty').value = '';
+            document.getElementById('stock-form-title').innerText = "Tambah / Modifikasi Bahan & Produk";
         }
 
         function saveOperasionalItem() {
@@ -1363,7 +1362,19 @@
 
                         let sorted = Object.keys(itemCounters).map(k => ({ name: k, qty: itemCounters[k] }));
                         let best = [...sorted].sort((a,b) => b.qty - a.qty).slice(0, 5);
-                        const bList = document.getElementById('top-best-seller'); if(bList) { bList.innerHTML = ''; best.forEach((p, i) => bList.innerHTML += `<li class="py-1.5 flex justify-between"><span>${i+1}. ${p.name}</span><span class="font-bold text-emerald-600">${p.qty} porsi</span></li>`); }
+                        let slow = [...sorted].filter(x => x.qty >= 0).sort((a,b) => a.qty - b.qty).slice(0, 5);
+
+                        const bList = document.getElementById('top-best-seller'); 
+                        if(bList) { 
+                            bList.innerHTML = ''; 
+                            best.forEach((p, i) => bList.innerHTML += `<li class="py-1.5 flex justify-between"><span>${i+1}. ${p.name}</span><span class="font-bold text-emerald-600">${p.qty} porsi</span></li>`); 
+                        }
+
+                        const sList = document.getElementById('top-slow-moving');
+                        if(sList) {
+                            sList.innerHTML = '';
+                            slow.forEach((p, i) => sList.innerHTML += `<li class="py-1.5 flex justify-between"><span>${i+1}. ${p.name}</span><span class="font-bold text-slate-500">${p.qty} porsi</span></li>`);
+                        }
                     });
                 });
             });
@@ -1385,6 +1396,11 @@
             namaKaryawan2 = document.getElementById('cfg-nama-k2').value.trim() || "Karyawan 2";
             document.querySelectorAll('.label-name-k1').forEach(el => el.innerText = namaKaryawan1);
             document.querySelectorAll('.label-name-k2').forEach(el => el.innerText = namaKaryawan2);
+            
+            const optK1 = document.getElementById('opt-k1');
+            const optK2 = document.getElementById('opt-k2');
+            if(optK1) optK1.innerText = namaKaryawan1;
+            if(optK2) optK2.innerText = namaKaryawan2;
         }
 
         function saveKonsumsiKaryawan() {
@@ -1431,7 +1447,7 @@
                 document.getElementById('konsumsi-harga').value = '';
                 alert(`Jatah makan ${targetStockItem.namaName} x${qtyItem} berhasil dimasukkan dan stok telah dipotong!`);
             }).catch(err => {
-                console.error("Gagal memotong stok konsumsi:", err);
+                console.error(err);
                 alert("Terjadi kesalahan koneksi sistem database.");
             });
         }
@@ -1496,7 +1512,9 @@
             db.collection("stocks").onSnapshot(snapshot => {
                 globalStocks = []; snapshot.forEach(doc => { let d = doc.data(); d.id = doc.id; globalStocks.push(d); });
                 updateStockTableUI(globalStocks);
-                loadDetailedReportAndAbsensi();
+                if (!document.getElementById('menu-laporan').classList.contains('hidden')) {
+                    loadDetailedReportAndAbsensi();
+                }
             });
             
             listenKonsumsiRealtime();
