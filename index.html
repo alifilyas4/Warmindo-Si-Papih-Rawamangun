@@ -106,7 +106,7 @@
                         <h4 class="text-base font-black text-purple-600 mt-1" id="history-summary-transfer">Rp 0</h4>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🔄 Lain-lain / Split</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🔄 Lain-lain</p>
                         <h4 class="text-base font-black text-slate-500 mt-1" id="history-summary-lain">Rp 0</h4>
                     </div>
                 </div>
@@ -885,21 +885,25 @@
             let profit = total - totalModal;
 
             let finalPaymentMethodLabel = "";
-            const isSplitBillActive = document.getElementById('split-bill-checkbox').checked;
+            let isSplitBillActive = document.getElementById('split-bill-checkbox').checked;
+            let splitAmount1 = 0;
+            let splitAmount2 = 0;
+            let splitMethod1 = "";
+            let splitMethod2 = "";
 
             if (isSplitBillActive) {
-                const amount1 = parseInt(document.getElementById('split-amount-1').value) || 0;
-                const method1 = document.getElementById('order-payment-method').value;
-                const method2 = document.getElementById('order-payment-method-2').value;
-                const amount2 = total - amount1;
+                splitAmount1 = parseInt(document.getElementById('split-amount-1').value) || 0;
+                splitMethod1 = document.getElementById('order-payment-method').value;
+                splitMethod2 = document.getElementById('order-payment-method-2').value;
+                splitAmount2 = total - splitAmount1;
 
-                if (amount1 <= 0 || amount1 >= total) {
+                if (splitAmount1 <= 0 || splitAmount1 >= total) {
                     return alert("Gagal! Nominal pembayaran pertama harus di antara Rp 1 s/d total tagihan.");
                 }
-                if (method1 === method2) {
+                if (splitMethod1 === splitMethod2) {
                     return alert("Gagal! Pilih metode kedua yang berbeda untuk pembagian split bill.");
                 }
-                finalPaymentMethodLabel = `${method1} (Rp ${amount1.toLocaleString()}) + ${method2} (Rp ${amount2.toLocaleString()})`;
+                finalPaymentMethodLabel = `${splitMethod1} (Rp ${splitAmount1.toLocaleString()}) + ${splitMethod2} (Rp ${splitAmount2.toLocaleString()})`;
             } else {
                 finalPaymentMethodLabel = document.getElementById('order-payment-method').value;
             }
@@ -924,6 +928,11 @@
             batch.set(db.collection("transaksi_history").doc(), {
                 meja: selectedTable, items: activeBillItems, total: total, hpp: totalModal, profit: profit,
                 shift: currentShift, tanggal: dateStr, bulan: monthStr, jenisTransaksi: finalPaymentMethodLabel, 
+                isSplitBill: isSplitBillActive,
+                splitAmount1: splitAmount1,
+                splitMethod1: splitMethod1,
+                splitAmount2: splitAmount2,
+                splitMethod2: splitMethod2,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
             batch.delete(db.collection("bills").doc(selectedTable));
@@ -1063,30 +1072,43 @@
                     let nominal = data.total || 0;
                     sumTotal += nominal;
 
-                    const tipePay = data.jenisTransaksi ? data.jenisTransaksi.trim() : "Cash";
-                    
-                    if (tipePay.includes("+")) {
-                        sumLain += nominal; 
-                    } else if (tipePay === "Cash") {
-                        sumCash += nominal;
-                    } else if (tipePay === "QRIS") {
-                        sumQris += nominal;
-                    } else if (tipePay === "Transfer") {
-                        sumTransfer += nominal;
+                    if (data.isSplitBill) {
+                        // Alokasi pecahan Metode Ke-1
+                        if (data.splitMethod1 === "Cash") sumCash += data.splitAmount1;
+                        else if (data.splitMethod1 === "QRIS") sumQris += data.splitAmount1;
+                        else if (data.splitMethod1 === "Transfer") sumTransfer += data.splitAmount1;
+                        else sumLain += data.splitAmount1;
+
+                        // Alokasi pecahan Metode Ke-2
+                        if (data.splitMethod2 === "Cash") sumCash += data.splitAmount2;
+                        else if (data.splitMethod2 === "QRIS") sumQris += data.splitAmount2;
+                        else if (data.splitMethod2 === "Transfer") sumTransfer += data.splitAmount2;
+                        else sumLain += data.splitAmount2;
                     } else {
-                        sumLain += nominal;
+                        // Logika Transaksi Tunggal Non-Split
+                        const tipePay = data.jenisTransaksi ? data.jenisTransaksi.trim() : "Cash";
+                        if (tipePay === "Cash") {
+                            sumCash += nominal;
+                        } else if (tipePay === "QRIS") {
+                            sumQris += nominal;
+                        } else if (tipePay === "Transfer") {
+                            sumTransfer += nominal;
+                        } else {
+                            sumLain += nominal;
+                        }
                     }
 
                     let itemsStr = data.items.map(i => `${i.namaItem} (${i.qty})`).join(', ');
+                    const tipePay = data.jenisTransaksi ? data.jenisTransaksi.trim() : "Cash";
                     
                     let methodColor = "bg-slate-100 text-slate-700";
-                    if (tipePay.includes("+")) {
+                    if (data.isSplitBill) {
                         methodColor = "bg-amber-50 text-amber-700 font-bold border border-amber-300";
-                    } else if (data.jenisTransaksi === "QRIS") {
+                    } else if (tipePay === "QRIS") {
                         methodColor = "bg-blue-100 text-blue-700 font-bold";
-                    } else if (data.jenisTransaksi === "Transfer") {
+                    } else if (tipePay === "Transfer") {
                         methodColor = "bg-purple-100 text-purple-700 font-bold";
-                    } else if (data.jenisTransaksi === "Cash") {
+                    } else if (tipePay === "Cash") {
                         methodColor = "bg-amber-100 text-amber-800 font-bold";
                     }
 
