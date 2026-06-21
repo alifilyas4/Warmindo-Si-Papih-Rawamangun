@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warmindo Si Papih Rawamangun - POS Premium v3.2</title>
+    <title>Warmindo & Rental PS Si Papih Rawamangun - POS Premium v4.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
@@ -22,7 +22,7 @@
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent opacity-50"></div>
         <div class="bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-md border border-white/20 relative z-10">
             <div class="text-center mb-8">
-                <span class="bg-red-100 text-red-600 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Sistem POS Real-time v3.2</span>
+                <span class="bg-red-100 text-red-600 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Sistem Dual-POS v4.0</span>
                 <h2 class="text-3xl font-extrabold text-slate-900 mt-3 tracking-tight">Si Papih Rawamangun</h2>
                 <p class="text-sm text-slate-500 mt-1">Masuk dengan akun untuk mencatat absensi kehadiran</p>
             </div>
@@ -47,7 +47,7 @@
             <div class="flex items-center gap-4">
                 <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-amber-500 to-red-500 flex items-center justify-center font-black text-white text-xl">W</div>
                 <div>
-                    <h1 class="text-lg font-extrabold tracking-tight">Warmindo Si Papih</h1>
+                    <h1 class="text-lg font-extrabold tracking-tight">Warmindo & Rental PS Si Papih</h1>
                     <p class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
                         <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-800 font-bold text-amber-400" id="user-display"></span>
                         <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-800 italic text-slate-300" id="role-display"></span>
@@ -72,25 +72,52 @@
             <button onclick="switchMenu('riwayat')" id="btn-riwayat" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap text-sm hover:text-slate-800">2. Riwayat Transaksi</button>
             <button onclick="switchMenu('konsumsi')" id="btn-konsumsi" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap text-sm hover:text-slate-800">3. Konsumsi Karyawan</button>
             <button onclick="switchMenu('operasional')" id="btn-operasional" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap text-sm hover:text-slate-800">4. Biaya Operasional</button>
-            <button onclick="switchMenu('stock')" id="btn-stock" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap admin-only hidden text-sm hover:text-slate-800">5. Manajemen Stock</button>
+            <button onclick="switchMenu('stock')" id="btn-stock" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap admin-only hidden text-sm hover:text-slate-800">5. Manajemen Stock & Menu</button>
             <button onclick="switchMenu('laporan')" id="btn-laporan" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap admin-only hidden text-sm hover:text-slate-800">6. Laporan dan Absensi</button>
             <button onclick="switchMenu('opname')" id="btn-opname" class="nav-btn flex-1 py-4 px-6 text-center text-slate-500 font-medium whitespace-nowrap admin-only hidden text-sm hover:text-slate-800">7. Stock Opname dan Rekap</button>
         </nav>
 
         <main class="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
             
-            <section id="menu-transaksi" class="menu-content space-y-6">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-900">Layout Ruangan Warmindo</h2>
-                    <p class="text-xs text-slate-500">Pilih nomor meja untuk memasukkan menu dasar serta opsi tambahan kustom.</p>
+            <section id="menu-transaksi" class="menu-content space-y-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="border-b pb-3 mb-4 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-black text-red-600 tracking-tight">🍜 WARMINDO RAWAMANGUN</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Pilih nomor meja pelanggan untuk memasukkan pesanan makanan & topping.</p>
+                        </div>
+                        <span class="bg-red-50 text-red-600 text-xs font-bold px-3 py-1 rounded-full">Meja 1 - 14 + Order Khusus</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4" id="table-grid-warmindo"></div>
                 </div>
-                <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4" id="table-grid"></div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="border-b pb-3 mb-4 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-black text-blue-600 tracking-tight">🎮 RENTAL PS ARDA</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Pilih nomor slot konsol PS untuk billing sewa unit per jam atau billing terbuka.</p>
+                        </div>
+                        <span class="bg-blue-50 text-blue-600 text-xs font-bold px-3 py-1 rounded-full">Console TV 01 - TV 08</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-4" id="table-grid-ps"></div>
+                </div>
             </section>
 
             <section id="menu-riwayat" class="menu-content hidden space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 rounded-xl shadow-sm">
+                        <p class="text-[10px] font-bold uppercase tracking-wider opacity-80">Total Omset Terfilter (Warmindo)</p>
+                        <h4 class="text-xl font-black mt-1" id="history-summary-warmindo">Rp 0</h4>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-xl shadow-sm">
+                        <p class="text-[10px] font-bold uppercase tracking-wider opacity-80">Total Omset Terfilter (Rental PS)</p>
+                        <h4 class="text-xl font-black mt-1" id="history-summary-ps">Rp 0</h4>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
                     <div class="bg-gradient-to-br from-slate-800 to-slate-950 text-white p-4 rounded-xl shadow-sm">
-                        <p class="text-[10px] font-bold opacity-70 uppercase tracking-wider">Total Terfilter</p>
+                        <p class="text-[10px] font-bold opacity-70 uppercase tracking-wider">Gabungan Total</p>
                         <h4 class="text-base font-black text-amber-400 mt-1" id="history-summary-total">Rp 0</h4>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200">
@@ -98,7 +125,7 @@
                         <h4 class="text-base font-black text-slate-900 mt-1" id="history-summary-cash">Rp 0</h4>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">📱 Total QRIS / Dana / OVO</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">📱 Total QRIS / E-Wallet</p>
                         <h4 class="text-base font-black text-blue-600 mt-1" id="history-summary-qris">Rp 0</h4>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200">
@@ -115,12 +142,24 @@
                     <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-wrap justify-between items-center gap-4">
                         <div>
                             <h3 class="font-bold text-slate-900">Arsip Transaksi Penjualan</h3>
-                            <span class="text-xs text-slate-400 italic">*Menampilkan histori penjualan berdasarkan filter</span>
+                            <span class="text-xs text-slate-400 italic">*Menampilkan histori gabungan berdasarkan filter rentang</span>
                         </div>
                         <div class="flex flex-wrap gap-2">
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase">Filter Tanggal</label>
-                                <input type="date" id="history-filter-date" onchange="loadHistoryData()" class="p-2 border rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-red-500">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase">Filter Bisnis</label>
+                                <select id="history-filter-divisi" onchange="loadHistoryData()" class="p-2 border rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-red-500">
+                                    <option value="ALL">Semua Bisnis</option>
+                                    <option value="Warmindo">Hanya Warmindo</option>
+                                    <option value="Rental PS">Hanya Rental PS</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase">Mulai Tanggal</label>
+                                <input type="date" id="history-filter-start-date" onchange="loadHistoryData()" class="p-2 border rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-red-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase">Sampai Tanggal</label>
+                                <input type="date" id="history-filter-end-date" onchange="loadHistoryData()" class="p-2 border rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-red-500">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase">Filter Shift</label>
@@ -137,9 +176,9 @@
                             <thead>
                                 <tr class="bg-slate-100/70 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
                                     <th class="p-4">Tanggal / Waktu</th>
-                                    <th class="p-4">Shift</th>
-                                    <th class="p-4">Lokasi/Meja / Jenis</th>
-                                    <th class="p-4">Daftar Item Belanja + Kustomisasi</th>
+                                    <th class="p-4">Bisnis / Shift</th>
+                                    <th class="p-4">Lokasi / Metode</th>
+                                    <th class="p-4">Daftar Item Belanja / Durasi Sewa</th>
                                     <th class="p-4 text-right">Total Nominal</th>
                                     <th class="p-4 text-center">Aksi</th>
                                 </tr>
@@ -251,7 +290,7 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-amber-500">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Pengeluaran (Sesuai Tanggal Filter)</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Pengeluaran (Sesuai Filter Rentang)</p>
                         <h3 class="text-xl font-black text-slate-900 mt-1" id="op-total-daily-display">Rp 0</h3>
                     </div>
                     <div class="bg-gradient-to-br from-slate-800 to-slate-950 p-5 rounded-2xl shadow-sm text-white">
@@ -262,9 +301,19 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-wrap justify-between items-center gap-4">
                         <h3 class="font-bold text-slate-900 text-sm">Log Historis Pengeluaran</h3>
-                        <div class="flex gap-2">
-                            <input type="date" id="op-filter-date" onchange="loadOperasionalData()" class="p-2 border rounded-xl text-xs bg-white">
-                            <input type="month" id="op-filter-month" onchange="loadOperasionalData()" class="p-2 border rounded-xl text-xs bg-white">
+                        <div class="flex gap-2 flex-wrap">
+                            <div>
+                                <label class="block text-[10px] text-slate-400 uppercase font-bold">Dari</label>
+                                <input type="date" id="op-filter-start-date" onchange="loadOperasionalData()" class="p-2 border rounded-xl text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 uppercase font-bold">Sampai</label>
+                                <input type="date" id="op-filter-end-date" onchange="loadOperasionalData()" class="p-2 border rounded-xl text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 uppercase font-bold">Bulan Kontrol</label>
+                                <input type="month" id="op-filter-month" onchange="loadOperasionalData()" class="p-2 border rounded-xl text-xs bg-white mt-4 sm:mt-0">
+                            </div>
                         </div>
                     </div>
                     <div class="overflow-x-auto custom-scroll">
@@ -287,31 +336,38 @@
             <section id="menu-stock" class="menu-content hidden space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-slate-900 text-base" id="stock-form-title">Tambah / Modifikasi Bahan & Produk</h3>
+                        <h3 class="font-bold text-slate-900 text-base" id="stock-form-title">Tambah / Modifikasi Bahan, Jasa & Produk</h3>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-5 gap-4 items-end">
+                    <div class="grid grid-cols-1 sm:grid-cols-6 gap-4 items-end">
                         <input type="hidden" id="stock-id">
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase">Nama Produk/Bahan</label>
-                            <input type="text" id="stock-name" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-amber-500" placeholder="Contoh: Indomie, Telor">
+                            <label class="block text-xs font-bold text-slate-600 uppercase">Nama Item / Layanan</label>
+                            <input type="text" id="stock-name" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-amber-500" placeholder="Contoh: Indomie, Sewa PS4 /Jam">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase">Kategori</label>
+                            <label class="block text-xs font-bold text-slate-600 uppercase">Kategori Bisnis</label>
+                            <select id="stock-divisi" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-amber-500">
+                                <option value="Warmindo">Warmindo (F&B)</option>
+                                <option value="Rental PS">Rental PS (Jasa)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase">Jenis</label>
                             <select id="stock-kategori" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-amber-500">
-                                <option value="Utama">Menu Utama</option>
+                                <option value="Utama">Menu Utama / Layanan Utama</option>
                                 <option value="Topping">Topping / Tambahan</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-600 uppercase">Harga Modal (Rp)</label>
-                            <input type="number" id="stock-modal" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-amber-500">
+                            <input type="number" id="stock-modal" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-amber-500" value="0">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-600 uppercase">Harga Jual (Rp)</label>
                             <input type="number" id="stock-jual" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-amber-500">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase">Input Stok Masuk</label>
+                            <label class="block text-xs font-bold text-slate-600 uppercase">Stok Awal / Input Baru</label>
                             <input type="number" id="stock-qty" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-amber-500" placeholder="0">
                         </div>
                     </div>
@@ -324,7 +380,7 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-wrap justify-between items-center gap-4">
                         <div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                            <h3 class="font-bold text-slate-900 whitespace-nowrap">Aliran Stok Bahan & Produk</h3>
+                            <h3 class="font-bold text-slate-900 whitespace-nowrap">Aliran Bahan & Layanan POS</h3>
                             <input type="text" id="stock-search-input" oninput="filterStockTableBySearch()" class="p-2 border rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-slate-500 w-full max-w-xs" placeholder="🔍 Cari nama produk/bahan...">
                         </div>
                         <div>
@@ -341,12 +397,12 @@
                             <thead>
                                 <tr class="bg-slate-100/70 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
                                     <th class="p-4">Nama Bahan / Item</th>
-                                    <th class="p-4">Modal</th>
-                                    <th class="p-4">Harga Jual</th>
-                                    <th class="p-4 text-center">Stock Awal</th>
-                                    <th class="p-4 text-center text-emerald-600">Stock Masuk</th>
-                                    <th class="p-4 text-center text-red-600">Stock Keluar</th>
-                                    <th class="p-4 text-center">Stock Saat Ini</th>
+                                    <th class="p-4">Bisnis / Jenis</th>
+                                    <th class="p-4">Modal / Jual</th>
+                                    <th class="p-4 text-center">Stok Awal</th>
+                                    <th class="p-4 text-center text-emerald-600">Masuk</th>
+                                    <th class="p-4 text-center text-red-600">Keluar</th>
+                                    <th class="p-4 text-center">Stok Sisa</th>
                                     <th class="p-4">Aksi</th>
                                 </tr>
                             </thead>
@@ -359,8 +415,12 @@
             <section id="menu-laporan" class="menu-content hidden space-y-6">
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase">Pilih Tanggal Audit</label>
-                        <input type="date" id="filter-date" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm">
+                        <label class="block text-xs font-bold text-slate-600 uppercase">Mulai Tanggal Audit</label>
+                        <input type="date" id="filter-start-date" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase">Sampai Tanggal Audit</label>
+                        <input type="date" id="filter-end-date" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 uppercase">Pilih Shift Kerja</label>
@@ -370,18 +430,40 @@
                             <option value="2">Shift 2 (17.01 - 02.00)</option>
                         </select>
                     </div>
-                    <button onclick="loadDetailedReportAndAbsensi()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition">Terapkan Audit</button>
+                    <button onclick="loadDetailedReportAndAbsensi()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition sm:col-span-3">Terapkan Audit Multi-Hari</button>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-5 gap-4">
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Omset Kotor</p>
-                        <h3 class="text-xl font-black text-slate-900 mt-1" id="report-pemasukan">Rp 0</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                        <p class="text-[10px] font-bold text-red-700 uppercase">Omset Warmindo</p>
+                        <h3 class="text-lg font-black text-slate-900 mt-1" id="report-omset-warmindo">Rp 0</h3>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <p class="text-[10px] font-bold text-blue-700 uppercase">Omset Rental PS</p>
+                        <h3 class="text-lg font-black text-slate-900 mt-1" id="report-omset-ps">Rp 0</h3>
+                    </div>
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                        <p class="text-[10px] font-bold text-amber-800 uppercase">Total HPP Gabungan</p>
+                        <h3 class="text-lg font-black text-slate-700 mt-1" id="report-total-hpp">Rp 0</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-gradient-to-br from-slate-700 to-slate-900 p-5 rounded-2xl shadow-sm text-white">
+                        <p class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Total Pendapatan (Semua Shift)</p>
+                        <h3 class="text-xl font-black mt-1" id="report-pemasukan">Rp 0</h3>
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total HPP (Modal Menu)</p>
-                        <h3 class="text-xl font-black text-slate-600 mt-1" id="report-total-hpp">Rp 0</h3>
+                        <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Total Pendapatan (Shift 1)</p>
+                        <h3 class="text-xl font-black text-slate-900 mt-1" id="report-pemasukan-shift1">Rp 0</h3>
                     </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Total Pendapatan (Shift 2)</p>
+                        <h3 class="text-xl font-black text-slate-900 mt-1" id="report-pemasukan-shift2">Rp 0</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dana Makan Karyawan</p>
                         <h3 class="text-xl font-black text-amber-600 mt-1" id="report-total-konsumsi">Rp 0</h3>
@@ -391,7 +473,7 @@
                         <h3 class="text-xl font-black text-red-500 mt-1" id="report-total-operasional">Rp 0</h3>
                     </div>
                     <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-5 rounded-2xl shadow-sm">
-                        <p class="text-[10px] font-bold opacity-80 uppercase tracking-wider">Keuntungan Bersih</p>
+                        <p class="text-[10px] font-bold opacity-80 uppercase tracking-wider">Keuntungan Bersih Toko</p>
                         <h3 class="text-xl font-black mt-1" id="report-profit">Rp 0</h3>
                     </div>
                 </div>
@@ -404,7 +486,7 @@
                         </div>
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 md:col-span-1">
-                        <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-3 text-emerald-600">🔥 Produk Terlaris (Top)</h4>
+                        <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-3 text-emerald-600">🔥 Item Terlaris (Top 5)</h4>
                         <ol id="top-best-seller" class="divide-y text-xs text-slate-700 space-y-2.5"></ol>
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 md:col-span-1">
@@ -417,13 +499,17 @@
             <section id="menu-opname" class="menu-content hidden space-y-6">
                 <div class="flex flex-wrap justify-between items-center gap-4">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-900">Stock Opname & Rekapitulasi Berkala</h2>
-                        <p class="text-xs text-slate-500">Menganalisis pergerakan mutasi barang dan laporan performa keuangan harian atau bulanan.</p>
+                        <h2 class="text-xl font-bold text-slate-900">Stock Opname & Rentang Rekapitulasi Berkala</h2>
+                        <p class="text-xs text-slate-500">Menganalisis pergerakan mutasi barang serta pemisahan performa laba bersih usaha dalam rentang hari.</p>
                     </div>
-                    <div class="bg-white p-3 rounded-2xl shadow-sm border flex items-center gap-3">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border flex flex-wrap items-center gap-3">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase">Filter Hari</label>
-                            <input type="date" id="opname-filter-date" onchange="runStockOpnameAudit()" class="p-1.5 border rounded-lg text-xs font-semibold">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase">Dari Tanggal</label>
+                            <input type="date" id="opname-filter-start-date" onchange="runStockOpnameAudit()" class="p-1.5 border rounded-lg text-xs font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase">Sampai Tanggal</label>
+                            <input type="date" id="opname-filter-end-date" onchange="runStockOpnameAudit()" class="p-1.5 border rounded-lg text-xs font-semibold">
                         </div>
                         <div class="border-l pl-3">
                             <label class="block text-[10px] font-bold text-slate-400 uppercase">Filter Bulan</label>
@@ -434,43 +520,44 @@
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
                     <div class="bg-white p-4 rounded-xl border border-slate-200">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Total Omset</p>
-                        <h4 class="text-sm font-black text-slate-900 mt-1" id="opname-omset">Rp 0</h4>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Omset Warmindo</p>
+                        <h4 class="text-sm font-black text-red-600 mt-1" id="opname-omset-warmindo">Rp 0</h4>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Total HPP (Modal)</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Omset Rental PS</p>
+                        <h4 class="text-sm font-black text-blue-600 mt-1" id="opname-omset-ps">Rp 0</h4>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Total HPP</p>
                         <h4 class="text-sm font-black text-slate-500 mt-1" id="opname-hpp">Rp 0</h4>
                     </div>
-                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                        <p class="text-[10px] font-bold text-emerald-700 uppercase">Untung Kotor</p>
-                        <h4 class="text-sm font-black text-emerald-700 mt-1" id="opname-kotor">Rp 0</h4>
-                    </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Biaya Operasional</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Operasional</p>
                         <h4 class="text-sm font-black text-red-500 mt-1" id="opname-operasional">Rp 0</h4>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Makan Karyawan</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Makan Staff</p>
                         <h4 class="text-sm font-black text-amber-600 mt-1" id="opname-konsumsi">Rp 0</h4>
                     </div>
                     <div class="bg-slate-900 p-4 rounded-xl text-white">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Untung Bersih</p>
-                        <h4 class="text-sm font-black text-amber-400 mt-1" id="opname-bersih">Rp 0</h4>
+                        <p class="text-[10px] font-bold text-amber-400 uppercase">Laba Bersih Total</p>
+                        <h4 class="text-sm font-black text-emerald-400 mt-1" id="opname-bersih">Rp 0</h4>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-5 border-b border-slate-100 bg-slate-50/50">
-                        <h3 class="font-bold text-slate-900 text-sm">Mutasi Aliran Barang (Stock In / Out / Current)</h3>
+                        <h3 class="font-bold text-slate-900 text-sm">Mutasi Aliran Stok Barang (Warmindo & PS)</h3>
                     </div>
                     <div class="overflow-x-auto custom-scroll">
                         <table class="w-full text-left">
                             <thead>
                                 <tr class="bg-slate-100/70 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
-                                    <th class="p-4">Nama Produk / Bahan</th>
+                                    <th class="p-4">Nama Produk / Jasa</th>
+                                    <th class="p-4">Bisnis</th>
                                     <th class="p-4 text-center">Stok Awal Estimasi</th>
                                     <th class="p-4 text-center text-emerald-600">Total Masuk (Stock In)</th>
-                                    <th class="p-4 text-center text-red-600">Total Keluar Terjual (Stock Out)</th>
+                                    <th class="p-4 text-center text-red-600">Total Keluar (Terjual)</th>
                                     <th class="p-4 text-center">Stok Riil Saat Ini</th>
                                 </tr>
                             </thead>
@@ -484,9 +571,10 @@
 
     <div id="order-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border overflow-hidden max-h-[90vh] flex flex-col">
-            <div class="bg-gradient-to-r from-red-600 to-red-700 p-4 text-white flex justify-between items-center shrink-0">
+            <div id="modal-header-bg" class="bg-gradient-to-r from-red-600 to-red-700 p-4 text-white flex justify-between items-center shrink-0">
                 <h3 class="font-bold text-base flex items-center gap-2">
-                    <span>Kasir Meja:</span>
+                    <span id="selected-table-business-label" class="bg-white text-slate-900 text-[11px] font-extrabold px-2 py-0.5 rounded uppercase"></span>
+                    <span>Kasir / Billing:</span>
                     <span id="selected-table-title" class="bg-white text-red-700 px-2.5 py-0.5 rounded-lg text-sm font-black"></span>
                 </h3>
                 <button onclick="closeOrderModal()" class="text-white text-xl font-bold">&times;</button>
@@ -495,7 +583,7 @@
             <div class="p-6 grid grid-cols-1 md:grid-cols-5 gap-6 overflow-y-auto custom-scroll flex-1">
                 <div class="md:col-span-3 space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase">Pilih Menu Utama</label>
+                        <label class="block text-xs font-bold text-slate-600 uppercase">Pilih Menu Utama / Paket Sewa</label>
                         <input type="text" id="order-item-search" oninput="filterDropdownMenu()" class="w-full mt-1 mb-1.5 p-2 bg-slate-100 border rounded-xl text-xs" placeholder="🔍 Ketik nama menu untuk mencari...">
                         <select id="order-item-select" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm"></select>
                     </div>
@@ -507,7 +595,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase">Kuantitas</label>
+                        <label class="block text-xs font-bold text-slate-600 uppercase">Kuantitas / Durasi Jam</label>
                         <input type="number" id="order-qty" value="1" min="1" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm">
                     </div>
                     <button onclick="addItemToBill()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-sm transition">Masukkan Struk</button>
@@ -521,11 +609,11 @@
                     <div class="pt-4 border-t mt-4 space-y-3">
                         <div class="flex items-center gap-2 bg-amber-50 p-2 rounded-lg border border-amber-200">
                             <input type="checkbox" id="split-bill-checkbox" onchange="toggleSplitBillView()" class="w-4 h-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
-                            <label for="split-bill-checkbox" class="text-xs font-bold text-amber-900 cursor-pointer select-none">Gunakan Split Bill (2 Metode)</label>
+                            <label for="split-bill-checkbox" class="text-xs font-bold text-amber-900 cursor-pointer select-none">Gunakan Split Bill</label>
                         </div>
 
                         <div>
-                            <label id="label-payment-method-1" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Metode Pembayaran (Utama)</label>
+                            <label id="label-payment-method-1" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Metode Pembayaran</label>
                             <select id="order-payment-method" class="w-full mt-1 p-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-red-500">
                                 <option value="Cash">Cash (Tunai)</option>
                                 <option value="QRIS">QRIS / Dana / OVO</option>
@@ -536,7 +624,7 @@
 
                         <div id="split-bill-fields" class="hidden space-y-3 border-t pt-2 border-dashed border-slate-300">
                             <div>
-                                <label class="block text-[10px] font-bold text-amber-700 uppercase tracking-wider">Nominal Bayar Metode 1 (Rp)</label>
+                                <label class="block text-[10px] font-bold text-amber-700 uppercase tracking-wider">Nominal Metode 1 (Rp)</label>
                                 <input type="number" id="split-amount-1" oninput="calculateSplitBillRemaining()" class="w-full mt-1 p-2 bg-white border border-amber-200 rounded-lg text-xs font-bold text-slate-800" placeholder="0">
                             </div>
                             <div>
@@ -549,7 +637,7 @@
                                 </select>
                             </div>
                             <div class="bg-blue-50 p-2 rounded-lg border border-blue-100 flex justify-between items-center">
-                                <span class="text-[10px] font-bold text-blue-800 uppercase">Sisa Tagihan (Metode 2):</span>
+                                <span class="text-[10px] font-bold text-blue-800 uppercase">Sisa Tagihan (M2):</span>
                                 <span id="split-remaining-display" class="text-xs font-black text-blue-700">Rp 0</span>
                             </div>
                         </div>
@@ -557,7 +645,7 @@
                         <div class="flex justify-between font-black text-sm text-red-600 mb-2"><span>TOTAL:</span><span id="bill-total-display">Rp 0</span></div>
                         <div class="grid grid-cols-1 gap-2">
                             <button onclick="saveOpenBill()" class="bg-amber-500 text-slate-900 font-bold py-2.5 rounded-xl text-xs">Simpan Draft</button>
-                            <button onclick="checkoutBill()" class="bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs">Bayar & Potong Stok</button>
+                            <button onclick="checkoutBill()" class="bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs">Bayar & Cetak Selesai</button>
                         </div>
                     </div>
                 </div>
@@ -579,19 +667,38 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let currentUser = null, currentRole = null, currentShift = null, selectedTable = null;
-        let activeBillItems = [], globalStocks = [];
+        let currentUser = null, currentRole = null, currentShift = null, selectedTable = null, selectedTableDivisi = "Warmindo";
+        let activeBillItems = [], globalStocks = [], globalOpenBills = [];
         let namaKaryawan1 = "Karyawan 1", namaKaryawan2 = "Karyawan 2";
         let historyUnsubscribe = null;
         let globalBillTotal = 0; 
+        let isProcessingCheckout = false; // Mencegah klik ganda pada transaksi pembayaran
+        let currentK1UsageGlobal = 0, currentK2UsageGlobal = 0; // Cache jatah makan real-time
 
-        // JAM DIGITAL REALTIME
+        // CLOCK OPERASIONAL & LIVE TIMER SEWA PS
         setInterval(() => {
             const now = new Date();
             document.getElementById('digital-clock').innerText = now.toTimeString().split(' ')[0];
+            
+            // Perbarui visual timer berjalan rental PS jika ada bill status OPEN
+            if(globalOpenBills.length > 0) {
+                globalOpenBills.forEach(bill => {
+                    if (bill.divisi === "Rental PS" && bill.status === 'OPEN' && bill.openTimeMs) {
+                        const elapsedMs = now.getTime() - bill.openTimeMs;
+                        const hours = Math.floor(elapsedMs / 3600000);
+                        const minutes = Math.floor((elapsedMs % 3600000) / 60000);
+                        const seconds = Math.floor((elapsedMs % 60000) / 1000);
+                        
+                        const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                        const timerBadge = document.getElementById(`timer-ps-${bill.id.replace(' ', '')}`);
+                        if(timerBadge) {
+                            timerBadge.innerText = `Running: ${timeString}`;
+                        }
+                    }
+                });
+            }
         }, 1000);
 
-        // PENENTUAN SHIFT KERJA OTOMATIS
         function determineShift() {
             const hour = new Date().getHours();
             if (hour >= 8 && hour < 17) return "1";
@@ -639,7 +746,7 @@
                 nama: currentUser, role: currentRole, shift: currentShift,
                 jamMasuk: now.toTimeString().split(' ')[0], tanggal: now.toISOString().split('T')[0],
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            }).catch(err => console.error("Gagal mencatat absensi: ", err));
         }
 
         function handleLogout() {
@@ -650,7 +757,7 @@
 
         function switchMenu(menuId) {
             if (currentRole === 'Karyawan' && (menuId === 'stock' || menuId === 'laporan' || menuId === 'opname')) {
-                alert('Akses Ditolak! Menu ini dilindungi dan hanya bisa diakses oleh Akun Admin.'); return;
+                alert('Akses Ditolak! Admin Only.'); return;
             }
             document.querySelectorAll('.menu-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`menu-${menuId}`).classList.remove('hidden');
@@ -664,41 +771,78 @@
             if (menuId === 'laporan') loadDetailedReportAndAbsensi();
         }
 
-        const tables = [];
-        for(let i=1; i<=14; i++) tables.push({id: `Meja ${i}`});
-        tables.push({id: 'Take Away'}, {id: 'Online Order'});
+        const warmindoTables = [];
+        for(let i=1; i<=14; i++) warmindoTables.push({id: `Meja ${i}`, divisi: "Warmindo"});
+        warmindoTables.push({id: 'Take Away', divisi: "Warmindo"}, {id: 'Online Order', divisi: "Warmindo"});
 
-        function renderTableGrid(openBills) {
-            const grid = document.getElementById('table-grid'); grid.innerHTML = '';
-            tables.forEach(table => {
-                const activeBill = openBills.find(b => b.id === table.id && b.status === 'OPEN');
-                const isPaid = !activeBill;
-                const btn = document.createElement('button');
-                btn.className = `p-5 rounded-2xl font-bold border flex flex-col items-center justify-center h-28 transition ${isPaid ? 'bg-white border-slate-200 text-slate-700 hover:border-slate-300' : 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-md'}`;
-                btn.onclick = () => openOrderModal(table.id, activeBill);
-                btn.innerHTML = `
-                    <span class="text-sm">${table.id}</span>
-                    <span class="text-xs font-semibold mt-2 px-2 py-0.5 rounded-full ${isPaid ? 'bg-slate-100 text-slate-600' : 'bg-white/20 text-white'}">${isPaid ? 'Kosong' : 'Rp ' + activeBill.total.toLocaleString()}</span>
-                `;
-                grid.appendChild(btn);
-            });
+        const psTables = [];
+        for(let i=1; i<=8; i++) psTables.push({id: `TV 0${i}`, divisi: "Rental PS"});
+
+        function renderDualTableGrid(openBills) {
+            const gridWarmindo = document.getElementById('table-grid-warmindo');
+            if(gridWarmindo) {
+                gridWarmindo.innerHTML = '';
+                warmindoTables.forEach(table => {
+                    const activeBill = openBills.find(b => b.id === table.id && b.status === 'OPEN');
+                    const isPaid = !activeBill;
+                    const btn = document.createElement('button');
+                    btn.className = `p-4 rounded-2xl font-bold border flex flex-col items-center justify-center h-24 transition ${isPaid ? 'bg-white border-slate-200 text-slate-700 hover:border-red-400' : 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-md'}`;
+                    btn.onclick = () => openOrderModal(table.id, "Warmindo", activeBill);
+                    btn.innerHTML = `
+                        <span class="text-sm">${table.id}</span>
+                        <span class="text-[11px] font-semibold mt-1.5 px-2 py-0.5 rounded-full ${isPaid ? 'bg-slate-100 text-slate-600' : 'bg-white/20 text-white'}">${isPaid ? 'Kosong' : 'Rp ' + activeBill.total.toLocaleString()}</span>
+                    `;
+                    gridWarmindo.appendChild(btn);
+                });
+            }
+
+            const gridPS = document.getElementById('table-grid-ps');
+            if(gridPS) {
+                gridPS.innerHTML = '';
+                psTables.forEach(table => {
+                    const activeBill = openBills.find(b => b.id === table.id && b.status === 'OPEN');
+                    const isPaid = !activeBill;
+                    const btn = document.createElement('button');
+                    btn.className = `p-4 rounded-2xl font-bold border flex flex-col items-center justify-center h-28 transition ${isPaid ? 'bg-white border-slate-200 text-slate-700 hover:border-blue-400' : 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md'}`;
+                    btn.onclick = () => openOrderModal(table.id, "Rental PS", activeBill);
+                    
+                    let timerSubText = isPaid ? 'Available' : 'Billed: Rp ' + activeBill.total.toLocaleString();
+                    let liveTimerBadge = isPaid ? '' : `<span id="timer-ps-${table.id.replace(' ', '')}" class="text-[9px] font-mono tracking-wider opacity-90 mt-1 block bg-black/20 px-1.5 py-0.5 rounded">Running: 00:00:00</span>`;
+                    
+                    btn.innerHTML = `
+                        <span class="text-xs">🎮 Console ${table.id}</span>
+                        <span class="text-[10px] font-semibold mt-1 px-2 py-0.5 rounded-full ${isPaid ? 'bg-slate-100 text-slate-600' : 'bg-white/20 text-white'}">${timerSubText}</span>
+                        ${liveTimerBadge}
+                    `;
+                    gridPS.appendChild(btn);
+                });
+            }
         }
 
-        function openOrderModal(tableId, activeBill) {
+        function openOrderModal(tableId, divisi, activeBill) {
             selectedTable = tableId;
+            selectedTableDivisi = divisi;
+            
             document.getElementById('selected-table-title').innerText = tableId;
+            document.getElementById('selected-table-business-label').innerText = divisi;
             document.getElementById('order-modal').classList.remove('hidden');
+            
+            const headerModal = document.getElementById('modal-header-bg');
+            if(divisi === "Rental PS") {
+                headerModal.className = "bg-gradient-to-r from-blue-600 to-indigo-700 p-4 text-white flex justify-between items-center shrink-0";
+            } else {
+                headerModal.className = "bg-gradient-to-r from-red-600 to-red-700 p-4 text-white flex justify-between items-center shrink-0";
+            }
+
             activeBillItems = activeBill ? activeBill.items : [];
             document.getElementById('order-qty').value = '1';
-            
             document.getElementById('order-item-search').value = '';
             document.getElementById('order-addon-search').value = '';
             document.getElementById('order-payment-method').value = 'Cash';
-            
             document.getElementById('split-bill-checkbox').checked = false;
             document.getElementById('split-amount-1').value = '';
             document.getElementById('order-payment-method-2').value = 'QRIS';
-            document.getElementById('label-payment-method-1').innerText = "Metode Pembayaran (Utama)";
+            document.getElementById('label-payment-method-1').innerText = "Metode Pembayaran";
             document.getElementById('split-bill-fields').classList.add('hidden');
             document.getElementById('split-remaining-display').innerText = 'Rp 0';
 
@@ -719,7 +863,7 @@
                 calculateSplitBillRemaining();
             } else {
                 splitFields.classList.add('hidden');
-                labelMetode1.innerText = "Metode Pembayaran (Utama)";
+                labelMetode1.innerText = "Metode Pembayaran";
             }
         }
 
@@ -747,36 +891,41 @@
             
             const previousSelectedMain = selectOrder ? selectOrder.value : '';
             const previousSelectedAddon = selectAddon ? selectAddon.value : '';
+            const previousSelectedKonsumsi = selectKonsumsi ? selectKonsumsi.value : '';
 
-            if(selectOrder) selectOrder.innerHTML = '<option value="">-- Pilih Menu Utama --</option>';
+            if(selectOrder) selectOrder.innerHTML = '<option value="">-- Pilih Menu Utama / Jasa --</option>';
             if(selectAddon) selectAddon.innerHTML = '<option value="">-- Tanpa Tambahan --</option>';
             if(selectKonsumsi) selectKonsumsi.innerHTML = '<option value="">-- Pilih Menu/Bahan --</option>';
 
             const sortedStocks = [...globalStocks].sort((a, b) => a.namaName.localeCompare(b.namaName));
 
             sortedStocks.forEach(item => {
+                const itemDivisi = item.divisi || "Warmindo";
                 const kat = item.kategori || "Utama";
                 const itemLabelName = item.namaName.toLowerCase();
 
-                if (kat === "Utama") {
-                    if (selectOrder && (mainSearch === "" || itemLabelName.includes(mainSearch))) {
-                        selectOrder.innerHTML += `<option value="${item.id}">${item.namaName} (Sisa: ${item.qty})</option>`;
-                    }
-                } else if (kat === "Topping") {
-                    if (selectAddon && (addonSearch === "" || itemLabelName.includes(addonSearch))) {
-                        selectAddon.innerHTML += `<option value="${item.id}">+ ${item.namaName} (+Rp ${item.hargaJual.toLocaleString()})</option>`;
+                if (itemDivisi === selectedTableDivisi) {
+                    if (kat === "Utama") {
+                        if (selectOrder && (mainSearch === "" || itemLabelName.includes(mainSearch))) {
+                            selectOrder.innerHTML += `<option value="${item.id}">${item.namaName} (Sisa Stok: ${item.qty})</option>`;
+                        }
+                    } else if (kat === "Topping") {
+                        if (selectAddon && (addonSearch === "" || itemLabelName.includes(addonSearch))) {
+                            selectAddon.innerHTML += `<option value="${item.id}">+ ${item.namaName} (+Rp ${item.hargaJual.toLocaleString()})</option>`;
+                        }
                     }
                 }
 
                 if(selectKonsumsi) {
-                    if (itemLabelName.includes(mainSearch) || itemLabelName.includes(addonSearch) || (mainSearch === "" && addonSearch === "")) {
-                        selectKonsumsi.innerHTML += `<option value="${item.id}">${item.namaName} (Stok: ${item.qty} Pcs)</option>`;
+                    if (mainSearch === "" || itemLabelName.includes(mainSearch) || itemLabelName.includes(addonSearch)) {
+                        selectKonsumsi.innerHTML += `<option value="${item.id}">[${itemDivisi}] ${item.namaName} (Stok: ${item.qty})</option>`;
                     }
                 }
             });
 
             if(selectOrder) selectOrder.value = previousSelectedMain;
             if(selectAddon) selectAddon.value = previousSelectedAddon;
+            if(selectKonsumsi) selectKonsumsi.value = previousSelectedKonsumsi;
         }
 
         function isRecipeEqual(arr1, arr2) {
@@ -794,7 +943,7 @@
                 container.innerHTML += `
                     <div class="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-200">
                         <div>
-                            <p class="font-bold text-slate-800 text-[11px]">${item.namaItem} <span class="text-red-500">x${item.qty}</span></p>
+                            <p class="font-bold text-slate-800 text-[11px]">${item.namaItem} <span class="text-blue-600">x${item.qty}</span></p>
                             <p class="text-[10px] text-slate-400">Rp ${(item.hargaJual * item.qty).toLocaleString()}</p>
                         </div>
                         <button onclick="removeItemFromBill(${index})" class="text-slate-400 hover:text-red-500 font-bold">✕</button>
@@ -813,17 +962,17 @@
             const selectAddon = document.getElementById('order-addon-select');
             
             if ((!selectOrder.value || selectOrder.value === "") && (!selectAddon.value || selectAddon.value === "")) {
-                return alert('Silakan pilih Menu Utama atau Topping terlebih dahulu!');
+                return alert('Silakan pilih Menu Utama / Topping sewa!');
             }
 
             const mainItem = selectOrder.value ? globalStocks.find(s => s.id === selectOrder.value) : null;
             const addonItem = selectAddon.value ? globalStocks.find(s => s.id === selectAddon.value) : null;
 
             if (mainItem && mainItem.qty < qty) {
-                return alert(`Gagal! Sisa stok ${mainItem.namaName} hanya ${mainItem.qty} Pcs`);
+                return alert(`Gagal! Sisa stok/kapasitas ${mainItem.namaName} hanya ${mainItem.qty}`);
             }
             if (addonItem && addonItem.qty < qty) {
-                return alert(`Gagal! Sisa stok ${addonItem.namaName} hanya ${addonItem.qty} Pcs`);
+                return alert(`Gagal! Sisa stok ${addonItem.namaName} hanya ${addonItem.qty}`);
             }
 
             let finalName = "";
@@ -874,14 +1023,20 @@
         function saveOpenBill() {
             if (!selectedTable) return;
             let total = activeBillItems.reduce((acc, curr) => acc + (curr.hargaJual * curr.qty), 0);
+            
+            // Catat waktu awal buka untuk penjejakan timer langsung sewa PS
+            const openTimeMs = new Date().getTime();
+
             db.collection("bills").doc(selectedTable).set({
-                id: selectedTable, items: activeBillItems, total: total, status: 'OPEN', shift: currentShift, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => { closeOrderModal(); });
+                id: selectedTable, divisi: selectedTableDivisi, items: activeBillItems, total: total, status: 'OPEN', 
+                shift: currentShift, openTimeMs: openTimeMs, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => { closeOrderModal(); }).catch(err => alert("Gagal menyimpan draft: " + err.message));
         }
 
-        // FUNGSI CHECKOUT UTAMA
         function checkoutBill() {
+            if (isProcessingCheckout) return; // Kunci tombol jika transaksi sedang diproses
             if (!selectedTable || activeBillItems.length === 0) return;
+            
             let total = activeBillItems.reduce((acc, curr) => acc + (curr.hargaJual * curr.qty), 0);
             let totalModal = activeBillItems.reduce((acc, curr) => acc + (curr.hargaModal * curr.qty), 0);
             let profit = total - totalModal;
@@ -900,15 +1055,15 @@
                 splitAmount2 = total - splitAmount1;
 
                 if (splitAmount1 <= 0 || splitAmount1 >= total) {
-                    return alert("Gagal! Nominal pembayaran pertama harus di antara Rp 1 s/d total tagihan.");
-                }
-                if (splitMethod1 === splitMethod2) {
-                    return alert("Gagal! Pilih metode kedua yang berbeda untuk pembagian split bill.");
+                    return alert("Gagal! Nominal pecahan bermasalah.");
                 }
                 finalPaymentMethodLabel = `${splitMethod1} (Rp ${splitAmount1.toLocaleString()}) + ${splitMethod2} (Rp ${splitAmount2.toLocaleString()})`;
             } else {
                 finalPaymentMethodLabel = document.getElementById('order-payment-method').value;
             }
+
+            // Aktifkan Status Processing Loading
+            isProcessingCheckout = true;
 
             const batch = db.batch();
             activeBillItems.forEach(item => {
@@ -928,34 +1083,35 @@
             const monthStr = dateStr.substring(0, 7);
             
             batch.set(db.collection("transaksi_history").doc(), {
-                meja: selectedTable, items: activeBillItems, total: total, hpp: totalModal, profit: profit,
+                meja: selectedTable, divisi: selectedTableDivisi, items: activeBillItems, total: total, hpp: totalModal, profit: profit,
                 shift: currentShift, tanggal: dateStr, bulan: monthStr, jenisTransaksi: finalPaymentMethodLabel, 
-                isSplitBill: isSplitBillActive,
-                splitAmount1: splitAmount1,
-                splitMethod1: splitMethod1,
-                splitAmount2: splitAmount2,
-                splitMethod2: splitMethod2,
+                isSplitBill: isSplitBillActive, splitAmount1: splitAmount1, splitMethod1: splitMethod1, splitAmount2: splitAmount2, splitMethod2: splitMethod2,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
             batch.delete(db.collection("bills").doc(selectedTable));
 
             batch.commit().then(() => { 
-                alert('Transaksi Berhasil Terbayar!'); 
+                alert('Transaksi Sukses Terbayar!'); 
                 closeOrderModal(); 
                 activeBillItems = []; 
-                document.getElementById('order-payment-method').value = 'Cash';
+            }).catch(error => {
+                console.error("Checkout gagal: ", error);
+                alert("Transaksi Gagal Diproses, Periksa Jaringan Anda!");
+            }).finally(() => {
+                isProcessingCheckout = false; // Buka proteksi klik ganda kembali
             });
         }
 
         function saveStockItem() {
             const id = document.getElementById('stock-id').value;
             const name = document.getElementById('stock-name').value.trim();
+            const divisi = document.getElementById('stock-divisi').value;
             const kategori = document.getElementById('stock-kategori').value;
-            const modal = parseInt(document.getElementById('stock-modal').value);
+            const modal = parseInt(document.getElementById('stock-modal').value) || 0;
             const jual = parseInt(document.getElementById('stock-jual').value);
             const additiveIn = parseInt(document.getElementById('stock-qty').value) || 0;
 
-            if(!name || isNaN(modal) || isNaN(jual)) return alert('Isi form dengan lengkap!');
+            if(!name || isNaN(jual)) return alert('Isi nama & harga jual terlebih dahulu!');
 
             const selectedShiftFilter = document.getElementById('stock-filter-shift').value;
             const targetShift = selectedShiftFilter === 'CURRENT' ? currentShift : selectedShiftFilter;
@@ -969,31 +1125,28 @@
                         const existingIn = currentData[`shiftIn_${targetShift}`] || 0;
                         
                         transaction.update(ref, {
-                            namaName: name, kategori: kategori, hargaModal: modal, hargaJual: jual,
+                            namaName: name, divisi: divisi, kategori: kategori, hargaModal: modal, hargaJual: jual,
                             qty: oldQty + additiveIn, [`shiftIn_${targetShift}`]: existingIn + additiveIn
                         });
                     });
-                }).then(() => { alert('Bahan Terupdate!'); resetStockForm(); });
+                }).then(() => { alert('Data Berhasil Diperbarui!'); resetStockForm(); }).catch(e => alert("Gagal transaksi stok: " + e.message));
             } else {
                 db.collection("stocks").add({ 
-                    namaName: name, kategori: kategori, hargaModal: modal, hargaJual: jual, qty: additiveIn,
+                    namaName: name, divisi: divisi, kategori: kategori, hargaModal: modal, hargaJual: jual, qty: additiveIn,
                     [`shiftIn_${targetShift}`]: additiveIn, [`shiftOut_${targetShift}`]: 0, [`shiftInit_${targetShift}`]: 0
-                }).then(() => { alert('Item Baru Berhasil Dibuat!'); resetStockForm(); });
+                }).then(() => { alert('Item Baru Berhasil Dibuat!'); resetStockForm(); }).catch(e => alert("Gagal input stok baru: " + e.message));
             }
         }
 
-        function filterStockTableBySearch() {
-            updateStockTableUI(globalStocks);
-        }
+        function filterStockTableBySearch() { updateStockTableUI(globalStocks); }
 
         function updateStockTableUI(stocks) {
             const tbody = document.getElementById('stock-table-body');
-            if(!tbody) return;
-            tbody.innerHTML = ''; 
+            if(!tbody) return; tbody.innerHTML = ''; 
 
             const selectedShiftFilter = document.getElementById('stock-filter-shift').value;
             const targetShift = selectedShiftFilter === 'CURRENT' ? currentShift : selectedShiftFilter;
-            const stockSearchKey = document.getElementById('stock-search-input') ? document.getElementById('stock-search-input').value.toLowerCase() : '';
+            const stockSearchKey = document.getElementById('stock-search-input').value.toLowerCase();
 
             const sortedStocks = [...stocks].sort((a, b) => a.namaName.localeCompare(b.namaName));
 
@@ -1004,75 +1157,88 @@
                 const sOut = item[`shiftOut_${targetShift}`] || 0;
                 const sInit = item[`shiftInit_${targetShift}`] || (item.qty - sIn + sOut);
                 const kat = item.kategori || "Utama"; 
+                const div = item.divisi || "Warmindo";
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50">
                         <td class="p-4">
                             <span class="font-bold text-slate-900 block">${item.namaName}</span>
-                            <span class="text-[10px] px-2 py-0.5 rounded font-extrabold ${kat === 'Utama' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}">${kat}</span>
                         </td>
-                        <td class="p-4 text-slate-500">Rp ${item.hargaModal.toLocaleString()}</td>
-                        <td class="p-4 font-semibold text-slate-700">Rp ${item.hargaJual.toLocaleString()}</td>
+                        <td class="p-4">
+                            <span class="text-[10px] block font-black text-slate-500 uppercase">${div}</span>
+                            <span class="text-[10px] font-semibold text-slate-400 italic">${kat}</span>
+                        </td>
+                        <td class="p-4 text-xs font-medium">M: Rp ${item.hargaModal.toLocaleString()}<br><span class="text-emerald-600 font-bold">J: Rp ${item.hargaJual.toLocaleString()}</span></td>
                         <td class="p-4 text-center text-slate-500">${sInit}</td>
                         <td class="p-4 text-center text-emerald-600 font-bold">+${sIn}</td>
                         <td class="p-4 text-center text-red-500 font-bold">-${sOut}</td>
                         <td class="p-4 text-center font-black text-slate-900"><span class="bg-slate-100 px-2 py-1 rounded">${item.qty} Pcs</span></td>
-                        <td class="p-4 flex gap-3 items-center">
-                            <button onclick="editStockForm('${item.id}', '${item.namaName}', '${kat}', ${item.hargaModal}, ${item.hargaJual})" class="text-amber-600 font-bold text-xs hover:underline">Edit</button>
+                        <td class="p-4 flex gap-2 items-center mt-1">
+                            <button onclick="editStockForm('${item.id}', '${item.namaName}', '${div}', '${kat}', ${item.hargaModal}, ${item.hargaJual})" class="text-amber-600 font-bold text-xs hover:underline">Edit</button>
                             <span class="text-slate-300">|</span>
                             <button onclick="deleteStockItem('${item.id}', '${item.namaName}')" class="text-red-600 font-bold text-xs hover:underline">Hapus</button>
                         </td>
                     </tr>`;
             });
-            
             filterDropdownMenu();
         }
 
+        function editStockForm(id, name, divisi, kategori, modal, jual) {
+            document.getElementById('stock-id').value = id;
+            document.getElementById('stock-name').value = name;
+            document.getElementById('stock-divisi').value = divisi || "Warmindo";
+            document.getElementById('stock-kategori').value = kategori || "Utama";
+            document.getElementById('stock-modal').value = modal;
+            document.getElementById('stock-jual').value = jual;
+            document.getElementById('stock-form-title').innerText = "Edit Komponen Bisnis";
+        }
+
+        function resetStockForm() {
+            document.getElementById('stock-id').value = ''; document.getElementById('stock-name').value = '';
+            document.getElementById('stock-modal').value = '0'; document.getElementById('stock-jual').value = '';
+            document.getElementById('stock-qty').value = '';
+            document.getElementById('stock-form-title').innerText = "Tambah / Modifikasi Bahan, Jasa & Produk";
+        }
+
         function deleteStockItem(id, name) {
-            if (confirm(`Apakah Anda yakin ingin menghapus produk/bahan "${name}" secara permanen?`)) {
-                db.collection("stocks").doc(id).delete()
-                .then(() => {
-                    alert(`Produk "${name}" berhasil dihapus!`);
-                    if (document.getElementById('stock-id').value === id) resetStockForm();
-                });
+            if (confirm(`Hapus "${name}" permanen?`)) {
+                db.collection("stocks").doc(id).delete().catch(e => alert("Gagal hapus item: " + e.message));
             }
         }
 
         function loadHistoryData() {
             if (historyUnsubscribe) historyUnsubscribe();
 
-            const filterDate = document.getElementById('history-filter-date').value;
+            const filterDivisi = document.getElementById('history-filter-divisi').value;
+            const startDate = document.getElementById('history-filter-start-date').value;
+            const endDate = document.getElementById('history-filter-end-date').value;
             const filterShift = document.getElementById('history-filter-shift').value;
             const tbody = document.getElementById('history-table-body');
-            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Memuat arsip nota...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Memuat arsip...</td></tr>';
 
             let query = db.collection("transaksi_history");
+            
+            if (startDate && endDate) {
+                query = query.where("tanggal", ">=", startDate).where("tanggal", "<=", endDate);
+            } else if (startDate) {
+                query = query.where("tanggal", "==", startDate);
+            }
 
-            if (filterDate) query = query.where("tanggal", "==", filterDate);
             if (filterShift !== "ALL") query = query.where("shift", "==", filterShift);
+            if (filterDivisi !== "ALL") query = query.where("divisi", "==", filterDivisi);
 
             historyUnsubscribe = query.onSnapshot(snapshot => {
                 tbody.innerHTML = '';
-                
-                let sumTotal = 0, sumCash = 0, sumQris = 0, sumTransfer = 0, sumLain = 0;
+                let sumTotal = 0, sumCash = 0, sumQris = 0, sumTransfer = 0, sumLain = 0, sumWarmindo = 0, sumPS = 0;
 
-                if(snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Tidak ada transaksi ditemukan</td></tr>';
-                    document.getElementById('history-summary-total').innerText = 'Rp 0';
-                    document.getElementById('history-summary-cash').innerText = 'Rp 0';
-                    document.getElementById('history-summary-qris').innerText = 'Rp 0';
-                    document.getElementById('history-summary-transfer').innerText = 'Rp 0';
-                    document.getElementById('history-summary-lain').innerText = 'Rp 0';
-                    return;
-                }
-
-                let docsWithId = [];
-                snapshot.forEach(doc => { docsWithId.push({ id: doc.id, ...doc.data() }); });
-                docsWithId.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-
-                docsWithId.forEach(data => {
+                snapshot.forEach(doc => {
+                    const data = doc.data();
                     let nominal = data.total || 0;
                     sumTotal += nominal;
+
+                    const div = data.divisi || "Warmindo";
+                    if(div === "Rental PS") sumPS += nominal;
+                    else sumWarmindo += nominal;
 
                     if (data.isSplitBill) {
                         if (data.splitMethod1 === "Cash") sumCash += data.splitAmount1;
@@ -1085,121 +1251,63 @@
                         else if (data.splitMethod2 === "Transfer") sumTransfer += data.splitAmount2;
                         else sumLain += data.splitAmount2;
                     } else {
-                        const tipePay = data.jenisTransaksi ? data.jenisTransaksi.trim() : "Cash";
-                        if (tipePay === "Cash") {
-                            sumCash += nominal;
-                        } else if (tipePay === "QRIS") {
-                            sumQris += nominal;
-                        } else if (tipePay === "Transfer") {
-                            sumTransfer += nominal;
-                        } else {
-                            sumLain += nominal;
-                        }
+                        const tipePay = data.jenisTransaksi || "Cash";
+                        if (tipePay.includes("Cash")) sumCash += nominal;
+                        else if (tipePay.includes("QRIS")) sumQris += nominal;
+                        else if (tipePay.includes("Transfer")) sumTransfer += nominal;
+                        else sumLain += nominal;
                     }
 
                     let itemsStr = data.items.map(i => `${i.namaItem} (${i.qty})`).join(', ');
-                    const tipePay = data.jenisTransaksi ? data.jenisTransaksi.trim() : "Cash";
                     
-                    let methodColor = "bg-slate-100 text-slate-700";
-                    if (data.isSplitBill) {
-                        methodColor = "bg-amber-50 text-amber-700 font-bold border border-amber-300";
-                    } else if (tipePay === "QRIS") {
-                        methodColor = "bg-blue-100 text-blue-700 font-bold";
-                    } else if (tipePay === "Transfer") {
-                        methodColor = "bg-purple-100 text-purple-700 font-bold";
-                    } else if (tipePay === "Cash") {
-                        methodColor = "bg-amber-100 text-amber-800 font-bold";
-                    }
-
-                    let actionButton = '';
-                    if (currentRole === 'Admin') {
-                        actionButton = `<button onclick="deleteTransactionHistory('${data.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs px-3 py-1.5 rounded-xl border border-red-200 transition">Hapus</button>`;
-                    } else {
-                        actionButton = `<span class="text-xs text-slate-400 italic">No Access</span>`;
-                    }
-
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50">
                             <td class="p-4 text-xs font-mono">${data.tanggal}</td>
-                            <td class="p-4 text-xs"><span class="px-2 py-0.5 rounded font-bold bg-slate-100 text-slate-700">Shift ${data.shift}</span></td>
+                            <td class="p-4 text-xs">
+                                <span class="px-1.5 py-0.5 rounded font-black text-[10px] ${div === 'Rental PS' ? 'bg-blue-100 text-blue-700':'bg-red-100 text-red-700'}">${div}</span>
+                                <span class="block text-slate-400 mt-1">Shift ${data.shift}</span>
+                            </td>
                             <td class="p-4">
                                 <span class="font-bold text-slate-800 block">${data.meja}</span>
-                                <span class="text-[10px] inline-block mt-0.5 px-2 py-0.5 rounded ${methodColor}">${data.jenisTransaksi || 'Cash'}</span>
+                                <span class="text-[10px] text-slate-500">${data.jenisTransaksi || 'Cash'}</span>
                             </td>
                             <td class="p-4 text-xs font-medium text-slate-600 truncate max-w-xs" title="${itemsStr}">${itemsStr}</td>
                             <td class="p-4 text-right font-black text-emerald-600">Rp ${nominal.toLocaleString()}</td>
-                            <td class="p-4 text-center">${actionButton}</td>
+                            <td class="p-4 text-center">
+                                ${currentRole === 'Admin' ? `<button onclick="deleteTransactionHistory('${doc.id}')" class="text-xs text-red-500 font-bold hover:underline">Hapus</button>` : `<span class="text-xs text-slate-400 italic">No Access</span>`}
+                            </td>
                         </tr>`;
                 });
 
                 document.getElementById('history-summary-total').innerText = 'Rp ' + sumTotal.toLocaleString();
+                document.getElementById('history-summary-warmindo').innerText = 'Rp ' + sumWarmindo.toLocaleString();
+                document.getElementById('history-summary-ps').innerText = 'Rp ' + sumPS.toLocaleString();
                 document.getElementById('history-summary-cash').innerText = 'Rp ' + sumCash.toLocaleString();
                 document.getElementById('history-summary-qris').innerText = 'Rp ' + sumQris.toLocaleString();
                 document.getElementById('history-summary-transfer').innerText = 'Rp ' + sumTransfer.toLocaleString();
                 document.getElementById('history-summary-lain').innerText = 'Rp ' + sumLain.toLocaleString();
-            });
+            }, err => console.error("Snapshot history error: ", err));
         }
 
         function deleteTransactionHistory(transactionId) {
-            if (currentRole !== 'Admin') {
-                return alert('Akses Ditolak! Hanya Akun Admin yang dapat menghapus riwayat transaksi.');
-            }
-
-            if (!confirm("Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini akan mengembalikan jumlah stok barang yang terjual.")) return;
-
-            const transRef = db.collection("transaksi_history").doc(transactionId);
-
-            transRef.get().then(doc => {
-                if (!doc.exists) return alert("Data transaksi tidak ditemukan!");
-                
-                const data = doc.data();
-                const txShift = data.shift;
-                const batch = db.batch();
-
-                if (data.items && Array.isArray(data.items)) {
+            if (confirm("Hapus dan kembalikan posisi stok awal?")) {
+                db.collection("transaksi_history").doc(transactionId).get().then(doc => {
+                    const data = doc.data();
+                    const batch = db.batch();
                     data.items.forEach(item => {
-                        if (item.resep && Array.isArray(item.resep)) {
-                            item.resep.forEach(komponen => {
-                                const totalKembali = komponen.qtyUsed * item.qty;
-                                const stockRef = db.collection("stocks").doc(komponen.id);
-                                
-                                batch.update(stockRef, {
-                                    qty: firebase.firestore.FieldValue.increment(totalKembali),
-                                    [`shiftOut_${txShift}`]: firebase.firestore.FieldValue.increment(-totalKembali)
+                        if (item.resep) {
+                            item.resep.forEach(k => {
+                                batch.update(db.collection("stocks").doc(k.id), {
+                                    qty: firebase.firestore.FieldValue.increment(k.qtyUsed * item.qty),
+                                    [`shiftOut_${data.shift}`]: firebase.firestore.FieldValue.increment(-(k.qtyUsed * item.qty))
                                 });
                             });
                         }
                     });
-                }
-
-                batch.delete(transRef);
-                return batch.commit();
-            }).then(() => {
-                alert("Transaksi berhasil dihapus dan stok barang telah dikembalikan!");
-                loadDetailedReportAndAbsensi();
-                if (!document.getElementById('menu-opname').classList.contains('hidden')) {
-                    runStockOpnameAudit();
-                }
-            }).catch(err => {
-                console.error(err);
-                alert("Terjadi kesalahan sistem saat mencoba menghapus transaksi.");
-            });
-        }
-
-        function editStockForm(id, name, kategori, modal, jual) {
-            document.getElementById('stock-id').value = id;
-            document.getElementById('stock-name').value = name;
-            document.getElementById('stock-kategori').value = kategori || "Utama";
-            document.getElementById('stock-modal').value = modal;
-            document.getElementById('stock-jual').value = jual;
-            document.getElementById('stock-form-title').innerText = "Edit Bahan & Produk";
-        }
-
-        function resetStockForm() {
-            document.getElementById('stock-id').value = ''; document.getElementById('stock-name').value = '';
-            document.getElementById('stock-modal').value = ''; document.getElementById('stock-jual').value = '';
-            document.getElementById('stock-qty').value = '';
-            document.getElementById('stock-form-title').innerText = "Tambah / Modifikasi Bahan & Produk";
+                    batch.delete(db.collection("transaksi_history").doc(transactionId));
+                    batch.commit();
+                }).catch(err => alert("Gagal menghapus riwayat: " + err.message));
+            }
         }
 
         function saveOperasionalItem() {
@@ -1207,49 +1315,54 @@
             const biaya = parseInt(document.getElementById('op-item-cost').value);
             const tanggal = document.getElementById('op-item-date').value;
 
-            if (!nama || isNaN(biaya) || biaya <= 0 || !tanggal) return alert('Harap isi form pengeluaran dengan benar!');
+            if (!nama || isNaN(biaya) || !tanggal) return alert('Lengkapi Form Operasional!');
 
             db.collection("operasional").add({
                 nama: nama, biaya: biaya, tanggal: tanggal, bulan: tanggal.substring(0, 7),
                 shift: currentShift, timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                alert('Biaya Operasional Berhasil Dicatat!');
                 document.getElementById('op-item-name').value = ''; document.getElementById('op-item-cost').value = '';
                 loadOperasionalData();
-            });
+            }).catch(e => alert("Gagal simpan biaya operasional: " + e.message));
         }
 
         function loadOperasionalData() {
-            const filterDate = document.getElementById('op-filter-date').value;
+            const startOpDate = document.getElementById('op-filter-start-date').value;
+            const endOpDate = document.getElementById('op-filter-end-date').value;
             const filterMonth = document.getElementById('op-filter-month').value;
             const tbody = document.getElementById('operasional-table-body'); if(!tbody) return; tbody.innerHTML = '';
 
             db.collection("operasional").orderBy("tanggal", "desc").get().then(snapshot => {
-                let totalHarian = 0; let totalBulanan = 0;
+                let totalRangeHarian = 0; let totalBulanan = 0;
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    if (data.tanggal === filterDate) totalHarian += data.biaya;
-                    if (data.bulan === filterMonth) totalBulanan += data.biaya;
-
-                    let actionBtn = '';
-                    if (currentRole === 'Admin') {
-                        actionBtn = `<button onclick="deleteOperasionalItem('${doc.id}')" class="text-xs text-red-500 font-semibold hover:underline">Hapus</button>`;
+                    
+                    let matchRange = false;
+                    if (startOpDate && endOpDate) {
+                        if (data.tanggal >= startOpDate && data.tanggal <= endOpDate) matchRange = true;
+                    } else if (startOpDate) {
+                        if (data.tanggal === startOpDate) matchRange = true;
                     } else {
-                        actionBtn = `<span class="text-xs text-slate-400 italic">No Access</span>`;
+                        matchRange = true;
                     }
+
+                    if (matchRange) totalRangeHarian += data.biaya;
+                    if (data.bulan === filterMonth) totalBulanan += data.biaya;
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50">
                             <td class="p-4 font-mono text-xs">${data.tanggal}</td>
-                            <td class="p-4 text-xs"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold">Shift ${data.shift}</span></td>
+                            <td class="p-4 text-xs">Shift ${data.shift}</td>
                             <td class="p-4 font-bold text-slate-900">${data.nama}</td>
                             <td class="p-4 text-right font-bold text-red-600">Rp ${data.biaya.toLocaleString()}</td>
-                            <td class="p-4 text-center">${actionBtn}</td>
+                            <td class="p-4 text-center">
+                                ${currentRole === 'Admin' ? `<button onclick="deleteOperasionalItem('${doc.id}')" class="text-xs text-red-500 font-semibold hover:underline">Hapus</button>` : 'None'}
+                            </td>
                         </tr>`;
                 });
-                if(document.getElementById('op-total-daily-display')) document.getElementById('op-total-daily-display').innerText = 'Rp ' + totalHarian.toLocaleString();
-                if(document.getElementById('op-total-monthly-display')) document.getElementById('op-total-monthly-display').innerText = 'Rp ' + totalBulanan.toLocaleString();
-            });
+                document.getElementById('op-total-daily-display').innerText = 'Rp ' + totalRangeHarian.toLocaleString();
+                document.getElementById('op-total-monthly-display').innerText = 'Rp ' + totalBulanan.toLocaleString();
+            }).catch(err => console.error("Gagal memuat operasional: ", err));
         }
 
         function deleteOperasionalItem(id) {
@@ -1259,19 +1372,24 @@
         }
 
         function runStockOpnameAudit() {
-            const fDate = document.getElementById('opname-filter-date').value;
+            const startDate = document.getElementById('opname-filter-start-date').value;
+            const endDate = document.getElementById('opname-filter-end-date').value;
             const fMonth = document.getElementById('opname-filter-month').value;
             const tbody = document.getElementById('opname-table-body'); if(!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Sedang mengkalkulasi mutasi data...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Mengkalkulasi...</td></tr>';
 
             let transQuery = db.collection("transaksi_history");
             let opQuery = db.collection("operasional");
             let konsumsiQuery = db.collection("konsumsi");
 
-            if (fDate) {
-                transQuery = transQuery.where("tanggal", "==", fDate);
-                opQuery = opQuery.where("tanggal", "==", fDate);
-                konsumsiQuery = konsumsiQuery.where("tanggal", "==", fDate);
+            if (startDate && endDate) {
+                transQuery = transQuery.where("tanggal", ">=", startDate).where("tanggal", "<=", endDate);
+                opQuery = opQuery.where("tanggal", ">=", startDate).where("tanggal", "<=", endDate);
+                konsumsiQuery = konsumsiQuery.where("tanggal", ">=", startDate).where("tanggal", "<=", endDate);
+            } else if (startDate) {
+                transQuery = transQuery.where("tanggal", "==", startDate);
+                opQuery = opQuery.where("tanggal", "==", startDate);
+                konsumsiQuery = konsumsiQuery.where("tanggal", "==", startDate);
             } else if (fMonth) {
                 transQuery = transQuery.where("bulan", "==", fMonth);
                 opQuery = opQuery.where("bulan", "==", fMonth);
@@ -1279,137 +1397,150 @@
             }
 
             Promise.all([transQuery.get(), opQuery.get(), konsumsiQuery.get()]).then(([snapTrans, snapOp, snapKonsumsi]) => {
-                let omset = 0, hpp = 0, biayaOp = 0, biayaKonsumsi = 0;
+                let omsetWarmindo = 0, omsetPS = 0, hpp = 0, biayaOp = 0, biayaKonsumsi = 0;
                 let itemSoldCounters = {};
 
                 snapTrans.forEach(doc => {
                     const d = doc.data();
-                    omset += d.total || 0; hpp += d.hpp || 0;
+                    const div = d.divisi || "Warmindo";
+                    if(div === "Rental PS") omsetPS += d.total || 0;
+                    else omsetWarmindo += d.total || 0;
+
+                    hpp += d.hpp || 0;
                     if (d.items) {
                         d.items.forEach(it => {
                             if (it.resep) {
                                 it.resep.forEach(r => { itemSoldCounters[r.namaItem] = (itemSoldCounters[r.namaItem] || 0) + (it.qty * r.qtyUsed); });
-                            } else {
-                                itemSoldCounters[it.namaItem] = (itemSoldCounters[it.namaItem] || 0) + it.qty;
                             }
                         });
                     }
                 });
 
-                snapKonsumsi.forEach(doc => { 
-                    const dataK = doc.data();
-                    biayaKonsumsi += dataK.biaya || 0; 
-                    if(dataK.namaMenuStr && dataK.qtyItem) {
-                        itemSoldCounters[dataK.namaMenuStr] = (itemSoldCounters[dataK.namaMenuStr] || 0) + dataK.qtyItem;
-                    }
-                });
-
+                snapKonsumsi.forEach(doc => { biayaKonsumsi += doc.data().biaya || 0; });
                 snapOp.forEach(doc => { biayaOp += doc.data().biaya || 0; });
 
-                let untungKotor = omset - hpp;
+                let untungKotor = (omsetWarmindo + omsetPS) - hpp;
                 let untungBersih = untungKotor - biayaOp - biayaKonsumsi;
 
-                document.getElementById('opname-omset').innerText = 'Rp ' + omset.toLocaleString();
+                document.getElementById('opname-omset-warmindo').innerText = 'Rp ' + omsetWarmindo.toLocaleString();
+                document.getElementById('opname-omset-ps').innerText = 'Rp ' + omsetPS.toLocaleString();
                 document.getElementById('opname-hpp').innerText = 'Rp ' + hpp.toLocaleString();
-                document.getElementById('opname-kotor').innerText = 'Rp ' + untungKotor.toLocaleString();
                 document.getElementById('opname-operasional').innerText = 'Rp ' + biayaOp.toLocaleString();
                 document.getElementById('opname-konsumsi').innerText = 'Rp ' + biayaKonsumsi.toLocaleString();
                 document.getElementById('opname-bersih').innerText = 'Rp ' + untungBersih.toLocaleString();
 
                 tbody.innerHTML = '';
-                const sortedStocks = [...globalStocks].sort((a, b) => a.namaName.localeCompare(b.namaName));
-
-                sortedStocks.forEach(stockItem => {
+                globalStocks.forEach(stockItem => {
                     let totalTerjualOut = itemSoldCounters[stockItem.namaName] || 0;
                     let estimasiStokAwal = stockItem.qty + totalTerjualOut;
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50">
                             <td class="p-4 font-bold text-slate-900">${stockItem.namaName}</td>
-                            <td class="p-4 text-center text-slate-500">${estimasiStokAwal} Pcs</td>
+                            <td class="p-4 text-xs font-black uppercase text-slate-500">${stockItem.divisi || 'Warmindo'}</td>
+                            <td class="p-4 text-center text-slate-500">${estimasiStokAwal} Unit</td>
                             <td class="p-4 text-center text-emerald-600 font-semibold">+${(stockItem[`shiftIn_1`] || 0) + (stockItem[`shiftIn_2`] || 0)}</td>
-                            <td class="p-4 text-center text-red-500 font-bold">-${totalTerjualOut} Pcs</td>
+                            <td class="p-4 text-center text-red-500 font-bold">-${totalTerjualOut}</td>
                             <td class="p-4 text-center font-black"><span class="bg-slate-100 text-slate-800 px-2 py-1 rounded">${stockItem.qty} Pcs</span></td>
                         </tr>`;
                 });
-            });
+            }).catch(err => alert("Gagal kalkulasi data opname berkala: " + err.message));
         }
 
         function loadDetailedReportAndAbsensi() {
-            const filterDate = document.getElementById('filter-date').value;
+            const startDate = document.getElementById('filter-start-date').value;
+            const endDate = document.getElementById('filter-end-date').value;
             const filterShift = document.getElementById('filter-shift').value;
+            
             let queryTransaksi = db.collection("transaksi_history");
-            if (filterDate) queryTransaksi = queryTransaksi.where("tanggal", "==", filterDate);
+            let queryKonsumsi = db.collection("konsumsi");
+            let queryOperasional = db.collection("operasional");
+            let queryAbsensi = db.collection("absensi_karyawan");
 
-            queryTransaksi.get().then(snapshot => {
-                let totalOmset = 0, totalHpp = 0;
+            if (startDate && endDate) {
+                queryTransaksi = queryTransaksi.where("tanggal", ">=", startDate).where("tanggal", "<=", endDate);
+                queryKonsumsi = queryKonsumsi.where("tanggal", ">=", startDate).where("tanggal", "<=", endDate);
+                queryOperasional = queryOperasional.where("tanggal", ">=", startDate).where("tanggal", "<=", endDate);
+                queryAbsensi = queryAbsensi.where("tanggal", ">=", startDate).where("tanggal", "<=", endDate);
+            } else if (startDate) {
+                queryTransaksi = queryTransaksi.where("tanggal", "==", startDate);
+                queryKonsumsi = queryKonsumsi.where("tanggal", "==", startDate);
+                queryOperasional = queryOperasional.where("tanggal", "==", startDate);
+                queryAbsensi = queryAbsensi.where("tanggal", "==", startDate);
+            }
+
+            Promise.all([queryTransaksi.get(), queryKonsumsi.get(), queryOperasional.get(), queryAbsensi.get()]).then(([snapTrans, snapKonsumsi, snapOp, snapAbsen]) => {
+                let omsetWarmindo = 0, omsetPS = 0, totalOmset = 0, totalHpp = 0;
+                let totalShift1 = 0, totalShift2 = 0; 
                 let itemCounters = {};
-                globalStocks.forEach(p => { itemCounters[p.namaName] = 0; });
 
-                snapshot.forEach(doc => {
+                snapTrans.forEach(doc => {
                     const data = doc.data();
-                    if (filterShift === "ALL" || data.shift === filterShift) {
-                        totalOmset += data.total; totalHpp += (data.hpp || 0);
+                    const trxShift = String(data.shift); 
+
+                    if (trxShift === "1") {
+                        totalShift1 += data.total || 0;
+                    } else if (trxShift === "2") {
+                        totalShift2 += data.total || 0;
+                    }
+
+                    if (filterShift === "ALL" || trxShift === filterShift) {
+                        const div = data.divisi || "Warmindo";
+                        if(div === "Rental PS") omsetPS += data.total;
+                        else omsetWarmindo += data.total;
+
+                        totalOmset += data.total; 
+                        totalHpp += (data.hpp || 0);
                         if(data.items) {
                             data.items.forEach(item => { itemCounters[item.namaItem] = (itemCounters[item.namaItem] || 0) + item.qty; });
                         }
                     }
                 });
 
-                let queryKonsumsi = db.collection("konsumsi");
-                if (filterDate) queryKonsumsi = queryKonsumsi.where("tanggal", "==", filterDate);
+                document.getElementById('report-omset-warmindo').innerText = 'Rp ' + omsetWarmindo.toLocaleString();
+                document.getElementById('report-omset-ps').innerText = 'Rp ' + omsetPS.toLocaleString();
+                document.getElementById('report-total-hpp').innerText = 'Rp ' + totalHpp.toLocaleString();
+                
+                document.getElementById('report-pemasukan').innerText = 'Rp ' + totalOmset.toLocaleString();
+                document.getElementById('report-pemasukan-shift1').innerText = 'Rp ' + totalShift1.toLocaleString();
+                document.getElementById('report-pemasukan-shift2').innerText = 'Rp ' + totalShift2.toLocaleString();
 
-                queryKonsumsi.get().then(snapKonsumsi => {
-                    let totalKonsumsiHariIni = 0;
-                    snapKonsumsi.forEach(docK => {
-                        if (filterShift === "ALL" || docK.data().shift === filterShift) totalKonsumsiHariIni += docK.data().biaya;
-                    });
+                let totalKonsumsi = 0;
+                snapKonsumsi.forEach(docK => { totalKonsumsi += docK.data().biaya || 0; });
+                document.getElementById('report-total-konsumsi').innerText = 'Rp ' + totalKonsumsi.toLocaleString();
 
-                    let queryOp = db.collection("operasional");
-                    if (filterDate) queryOp = queryOp.where("tanggal", "==", filterDate);
+                let totalOp = 0;
+                snapOp.forEach(docO => { totalOp += docO.data().biaya || 0; });
+                document.getElementById('report-total-operasional').innerText = 'Rp ' + totalOp.toLocaleString();
 
-                    queryOp.get().then(snapOp => {
-                        let totalOperasionalHariIni = 0;
-                        snapOp.forEach(docO => {
-                            if (filterShift === "ALL" || docO.data().shift === filterShift) totalOperasionalHariIni += docO.data().biaya;
-                        });
+                let profitBersih = totalOmset - totalHpp - totalKonsumsi - totalOp;
+                document.getElementById('report-profit').innerText = 'Rp ' + profitBersih.toLocaleString();
 
-                        let totalProfit = totalOmset - totalHpp - totalKonsumsiHariIni - totalOperasionalHariIni;
-                        if(document.getElementById('report-pemasukan')) document.getElementById('report-pemasukan').innerText = 'Rp ' + totalOmset.toLocaleString();
-                        if(document.getElementById('report-total-hpp')) document.getElementById('report-total-hpp').innerText = 'Rp ' + totalHpp.toLocaleString();
-                        if(document.getElementById('report-total-konsumsi')) document.getElementById('report-total-konsumsi').innerText = 'Rp ' + totalKonsumsiHariIni.toLocaleString();
-                        if(document.getElementById('report-total-operasional')) document.getElementById('report-total-operasional').innerText = 'Rp ' + totalOperasionalHariIni.toLocaleString();
-                        if(document.getElementById('report-profit')) document.getElementById('report-profit').innerText = 'Rp ' + totalProfit.toLocaleString();
+                // Render Top Items
+                const bestSellerEl = document.getElementById('top-best-seller');
+                const slowMovingEl = document.getElementById('top-slow-moving');
+                if(bestSellerEl) bestSellerEl.innerHTML = '';
+                if(slowMovingEl) slowMovingEl.innerHTML = '';
 
-                        let sorted = Object.keys(itemCounters).map(k => ({ name: k, qty: itemCounters[k] }));
-                        let best = [...sorted].sort((a,b) => b.qty - a.qty).slice(0, 5);
-                        let slow = [...sorted].filter(x => x.qty >= 0).sort((a,b) => a.qty - b.qty).slice(0, 5);
-
-                        const bList = document.getElementById('top-best-seller'); 
-                        if(bList) { 
-                            bList.innerHTML = ''; 
-                            best.forEach((p, i) => bList.innerHTML += `<li class="py-1.5 flex justify-between"><span>${i+1}. ${p.name}</span><span class="font-bold text-emerald-600">${p.qty} porsi</span></li>`); 
-                        }
-
-                        const sList = document.getElementById('top-slow-moving');
-                        if(sList) {
-                            sList.innerHTML = '';
-                            slow.forEach((p, i) => sList.innerHTML += `<li class="py-1.5 flex justify-between"><span>${i+1}. ${p.name}</span><span class="font-bold text-slate-500">${p.qty} porsi</span></li>`);
-                        }
-                    });
+                let sortedItems = Object.keys(itemCounters).map(key => ({ name: key, qty: itemCounters[key] })).sort((a,b) => b.qty - a.qty);
+                
+                sortedItems.slice(0, 5).forEach((item, idx) => {
+                    if(bestSellerEl) bestSellerEl.innerHTML += `<li class="py-1 flex justify-between"><span>${idx+1}. ${item.name}</span> <span class="font-bold text-emerald-600">${item.qty} Pcs</span></li>`;
                 });
-            });
+                sortedItems.reverse().slice(0, 5).forEach((item, idx) => {
+                    if(slowMovingEl) slowMovingEl.innerHTML += `<li class="py-1 flex justify-between"><span>${idx+1}. ${item.name}</span> <span class="font-bold text-slate-500">${item.qty} Pcs</span></li>`;
+                });
 
-            if (filterDate && document.getElementById('absensi-log-list')) {
-                db.collection("absensi_karyawan").where("tanggal", "==", filterDate).orderBy("timestamp", "asc").get().then(snapAbsen => {
-                    const aList = document.getElementById('absensi-log-list'); aList.innerHTML = '';
-                    if(snapAbsen.empty) aList.innerHTML = '<li class="text-slate-400 italic p-2">Tidak ada data absensi hari ini.</li>';
+                // Render Absensi Log
+                const absensiList = document.getElementById('absensi-log-list');
+                if(absensiList) {
+                    absensiList.innerHTML = '';
                     snapAbsen.forEach(docA => {
                         const ab = docA.data();
-                        aList.innerHTML += `<li class="p-2 bg-slate-50 rounded-lg flex justify-between"><strong>${ab.nama.toUpperCase()} (Shift ${ab.shift})</strong> <span class="text-slate-500 font-mono">${ab.jamMasuk}</span></li>`;
+                        absensiList.innerHTML += `<li class="p-1 border-b"><b>${ab.nama.toUpperCase()}</b> (${ab.tanggal}) - Jam: <span class="text-amber-600 font-mono">${ab.jamMasuk}</span> [Shift ${ab.shift}]</li>`;
                     });
-                });
-            }
+                }
+            }).catch(err => console.error("Audit dashboard error: ", err));
         }
 
         function updateStaffNames() {
@@ -1432,82 +1563,68 @@
             let harga = parseInt(document.getElementById('konsumsi-harga').value);
             const dateStr = new Date().toISOString().split('T')[0];
 
-            if (!itemId) return alert('Silakan pilih item menu/bahan terlebih dahulu!');
-            if (qtyItem <= 0) return alert('Kuantitas item tidak valid!');
-
+            if (!itemId) return alert('Pilih item produk untuk memotong jatah jaminan makan!');
             const targetStockItem = globalStocks.find(s => s.id === itemId);
-            if (!targetStockItem) return alert('Item tidak ditemukan di sistem database stok!');
-            if (targetStockItem.qty < qtyItem) return alert(`Stok tidak cukup! Sisa stok untuk ${targetStockItem.namaName} adalah ${targetStockItem.qty} Pcs`);
+            if(isNaN(harga) || harga <= 0) harga = targetStockItem.hargaJual * qtyItem;
 
-            if(isNaN(harga) || harga <= 0) {
-                harga = targetStockItem.hargaJual * qtyItem;
+            // VALIDASI PLAFON SUBSIDI (Maksimal Rp 150.000)
+            const currentGlobalUsage = (selectValue === 'Karyawan 1') ? currentK1UsageGlobal : currentK2UsageGlobal;
+            if(currentGlobalUsage + harga > 150000) {
+                return alert(`Akses Ditolak! Total makan ${staffLabel} hari ini Rp ${(currentGlobalUsage).toLocaleString()}. Penambahan Rp ${harga.toLocaleString()} ini akan Melebihi Batas Plafon Jatah Rp 150.000!`);
             }
 
             const batch = db.batch();
-            const stockRef = db.collection("stocks").doc(itemId);
-            batch.update(stockRef, {
-                qty: firebase.firestore.FieldValue.increment(-qtyItem),
-                [`shiftOut_${currentShift}`]: firebase.firestore.FieldValue.increment(qtyItem)
+            batch.update(db.collection("stocks").doc(itemId), { qty: firebase.firestore.FieldValue.increment(-qtyItem) });
+            batch.set(db.collection("konsumsi").doc(), {
+                slotKey: selectValue, karyawan: staffLabel, itemId: itemId, namaMenuStr: targetStockItem.namaName, qtyItem: qtyItem,
+                biaya: harga, shift: currentShift, tanggal: dateStr, timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            const newKonsumsiRef = db.collection("konsumsi").doc();
-            batch.set(newKonsumsiRef, {
-                slotKey: selectValue, 
-                karyawan: staffLabel, 
-                itemId: itemId,
-                namaMenuStr: targetStockItem.namaName,
-                qtyItem: qtyItem,
-                biaya: harga, 
-                shift: currentShift, 
-                tanggal: dateStr, 
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            batch.commit().then(() => {
-                document.getElementById('konsumsi-qty').value = '1'; 
+            batch.commit().then(() => { 
+                alert('Konsumsi Berhasil Dicatat!'); 
                 document.getElementById('konsumsi-harga').value = '';
-                alert(`Jatah makan ${targetStockItem.namaName} x${qtyItem} berhasil dimasukkan dan stok telah dipotong!`);
-            }).catch(err => {
-                console.error(err);
-                alert("Terjadi kesalahan koneksi sistem database.");
-            });
+            }).catch(e => alert("Gagal mencatat data konsumsi: " + e.message));
         }
 
         function listenKonsumsiRealtime() {
             const hariIniStr = new Date().toISOString().split('T')[0];
-            
-            db.collection("konsumsi").onSnapshot(snapshot => {
+            db.collection("konsumsi").where("tanggal", "==", hariIniStr).onSnapshot(snapshot => {
                 let k1 = 0, k2 = 0;
                 const tbody = document.getElementById('konsumsi-table-body');
                 if(tbody) tbody.innerHTML = '';
 
-                let counterLog = 0;
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     if(data.slotKey === 'Karyawan 1') k1 += data.biaya;
                     if(data.slotKey === 'Karyawan 2') k2 += data.biaya;
 
-                    if(data.tanggal === hariIniStr && tbody) {
-                        counterLog++;
+                    if(tbody) {
                         tbody.innerHTML += `
                             <tr class="hover:bg-slate-50">
                                 <td class="p-4 font-mono text-xs">${data.tanggal}</td>
-                                <td class="p-4 text-xs"><span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-bold">Shift ${data.shift}</span></td>
-                                <td class="p-4 font-bold text-slate-800">${data.karyawan}</td>
-                                <td class="p-4 text-slate-600 font-medium">${data.namaMenuStr || 'Menu'} (x${data.qtyItem || 1})</td>
-                                <td class="p-4 text-right font-black text-amber-600">Rp ${(data.biaya || 0).toLocaleString()}</td>
+                                <td class="p-4 text-xs">Shift ${data.shift}</td>
+                                <td class="p-4 font-bold text-slate-900">${data.karyawan}</td>
+                                <td class="p-4 text-xs">${data.namaMenuStr} (x${data.qtyItem})</td>
+                                <td class="p-4 text-right font-bold text-amber-600">-Rp ${data.biaya.toLocaleString()}</td>
                             </tr>`;
                     }
                 });
 
-                if(tbody && counterLog === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Belum ada jatah makan karyawan yang diinput hari ini.</td></tr>';
+                // Sinkronisasi nilai global cache untuk dicek saat insert baru
+                currentK1UsageGlobal = k1;
+                currentK2UsageGlobal = k2;
+
+                if(tbody && snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Belum ada pemakaian konsumsi jatah makan staff hari ini.</td></tr>';
                 }
 
                 document.getElementById('k1-used').innerText = `Rp ${k1.toLocaleString()}`;
                 document.getElementById('k2-used').innerText = `Rp ${k2.toLocaleString()}`;
-                document.getElementById('bar-k1').style.width = Math.min((k1 / 150000) * 100, 100) + '%';
-                document.getElementById('bar-k2').style.width = Math.min((k2 / 150000) * 100, 100) + '%';
+
+                const pct1 = Math.min((k1 / 150000) * 100, 100);
+                const pct2 = Math.min((k2 / 150000) * 100, 100);
+                if(document.getElementById('bar-k1')) document.getElementById('bar-k1').style.width = pct1 + '%';
+                if(document.getElementById('bar-k2')) document.getElementById('bar-k2').style.width = pct2 + '%';
             });
         }
 
@@ -1515,27 +1632,36 @@
             const hariIni = new Date().toISOString().split('T')[0];
             const bulanIni = hariIni.substring(0, 7);
             
-            document.getElementById('filter-date').value = hariIni;
+            document.getElementById('filter-start-date').value = hariIni;
+            document.getElementById('filter-end-date').value = hariIni;
+            
             document.getElementById('op-item-date').value = hariIni;
-            document.getElementById('op-filter-date').value = hariIni;
+            document.getElementById('op-filter-start-date').value = hariIni;
+            document.getElementById('op-filter-end-date').value = hariIni;
             document.getElementById('op-filter-month').value = bulanIni;
-            document.getElementById('history-filter-date').value = hariIni;
-            document.getElementById('opname-filter-date').value = hariIni;
-            document.getElementById('opname-filter-month').value = "";
+            
+            document.getElementById('history-filter-start-date').value = hariIni;
+            document.getElementById('history-filter-end-date').value = hariIni;
+            
+            document.getElementById('opname-filter-start-date').value = hariIni;
+            document.getElementById('opname-filter-end-date').value = hariIni;
 
             updateStaffNames();
 
             db.collection("bills").onSnapshot(snapshot => {
-                let openBills = []; snapshot.forEach(doc => openBills.push(doc.data()));
-                renderTableGrid(openBills);
+                globalOpenBills = []; 
+                snapshot.forEach(doc => globalOpenBills.push(doc.data()));
+                renderDualTableGrid(globalOpenBills);
             });
 
             db.collection("stocks").onSnapshot(snapshot => {
-                globalStocks = []; snapshot.forEach(doc => { let d = doc.data(); d.id = doc.id; globalStocks.push(d); });
+                globalStocks = []; 
+                snapshot.forEach(doc => { 
+                    let d = doc.data(); 
+                    d.id = doc.id; 
+                    globalStocks.push(d); 
+                });
                 updateStockTableUI(globalStocks);
-                if (!document.getElementById('menu-laporan').classList.contains('hidden')) {
-                    loadDetailedReportAndAbsensi();
-                }
             });
             
             listenKonsumsiRealtime();
