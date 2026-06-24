@@ -387,8 +387,8 @@
                             <label class="block text-[10px] font-bold text-slate-400 uppercase">Filter Pergerakan Shift</label>
                             <select id="stock-filter-shift" onchange="updateStockTableUI(globalStocks)" class="p-2 border rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-slate-500">
                                 <option value="CURRENT">Shift Berjalan Saat Ini</option>
-                                <option value="1">Shift 1 (08.00 - 17.00)</option>
-                                <option value="2">Shift 2 (17.01 - 02.00)</option>
+                                <option value="1">Shift 1 (08.01 - 20.00)</option>
+                                <option value="2">Shift 2 (20.01 - 08.00)</option>
                             </select>
                         </div>
                     </div>
@@ -426,8 +426,8 @@
                         <label class="block text-xs font-bold text-slate-600 uppercase">Pilih Shift Kerja</label>
                         <select id="filter-shift" class="w-full mt-1.5 p-2.5 bg-slate-50 border rounded-xl text-sm">
                             <option value="ALL">Semua Shift Kerja</option>
-                            <option value="1">Shift 1 (08.00 - 17.00)</option>
-                            <option value="2">Shift 2 (17.01 - 02.00)</option>
+                            <option value="1">Shift 1 (08.01 - 20.00)</option>
+                            <option value="2">Shift 2 (20.01 - 08.00)</option>
                         </select>
                     </div>
                     <button onclick="loadDetailedReportAndAbsensi()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition sm:col-span-3">Terapkan Audit Multi-Hari</button>
