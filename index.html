@@ -688,7 +688,7 @@
         let globalBillTotal = 0; 
         let isProcessingCheckout = false; 
         let currentK1UsageGlobal = 0, currentK2UsageGlobal = 0; 
-        let trendChartInstance = null; // Variabel penampung instance grafik Chart.js
+        let trendChartInstance = null;
 
         // CLOCK OPERASIONAL & LIVE TIMER SEWA PS
         setInterval(() => {
@@ -704,7 +704,7 @@
                         const seconds = Math.floor((elapsedMs % 60000) / 1000);
                         
                         const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                        const timerBadge = document.getElementById(`timer-ps-${bill.id.replace(' ', '')}`);
+                        const timerBadge = document.getElementById(`timer-ps-${bill.id.replace(/\s+/g, '')}`);
                         if(timerBadge) {
                             timerBadge.innerText = `Running: ${timeString}`;
                         }
@@ -821,7 +821,7 @@
                     btn.onclick = () => openOrderModal(table.id, "Rental PS", activeBill);
                     
                     let timerSubText = isPaid ? 'Available' : 'Billed: Rp ' + activeBill.total.toLocaleString();
-                    let liveTimerBadge = isPaid ? '' : `<span id="timer-ps-${table.id.replace(' ', '')}" class="text-[9px] font-mono tracking-wider opacity-90 mt-1 block bg-black/20 px-1.5 py-0.5 rounded">Running: 00:00:00</span>`;
+                    let liveTimerBadge = isPaid ? '' : `<span id="timer-ps-${table.id.replace(/\s+/g, '')}" class="text-[9px] font-mono tracking-wider opacity-90 mt-1 block bg-black/20 px-1.5 py-0.5 rounded">Running: 00:00:00</span>`;
                     
                     btn.innerHTML = `
                         <span class="text-xs">🎮 Console ${table.id}</span>
@@ -925,7 +925,7 @@
                         }
                     } else if (kat === "Topping") {
                         if (selectAddon && (addonSearch === "" || itemLabelName.includes(addonSearch))) {
-                            selectAddon.innerHTML += `<option value="${item.id}">+ ${item.namaName} (+Rp ${item.hargaJual.toLocaleString()})</option>`;
+                            selectAddon.innerHTML += `<option value="${item.id}">${item.namaName} (+Rp ${item.hargaJual.toLocaleString()})</option>`;
                         }
                     }
                 }
@@ -1458,7 +1458,6 @@
             }).catch(err => alert("Gagal kalkulasi data opname berkala: " + err.message));
         }
 
-        // FUNGSI UTAMA LAPORAN & GENERATE GRAFIK TREN
         function loadDetailedReportAndAbsensi() {
             const startDate = document.getElementById('filter-start-date').value;
             const endDate = document.getElementById('filter-end-date').value;
@@ -1486,11 +1485,9 @@
                 let totalShift1 = 0, totalShift2 = 0; 
                 let itemCounters = {};
 
-                // Map untuk memetakan penjualan harian dan pengeluaran harian demi kebutuhan grafik tren
                 let dailyOmsetMap = {};
                 let dailyProfitMap = {};
 
-                // Inisialisasi awal peta tanggal berdasarkan range filter data agar grafik terisi rapi
                 if(startDate && endDate) {
                     let start = new Date(startDate);
                     let end = new Date(endDate);
@@ -1520,12 +1517,10 @@
                         totalOmset += data.total; 
                         totalHpp += (data.hpp || 0);
 
-                        // Akumulasi peta harian grafik
                         if(dailyOmsetMap[trxTanggal] === undefined) dailyOmsetMap[trxTanggal] = 0;
                         if(dailyProfitMap[trxTanggal] === undefined) dailyProfitMap[trxTanggal] = 0;
                         
                         dailyOmsetMap[trxTanggal] += data.total || 0;
-                        // Profit Sementara per tanggal = Omset - HPP
                         dailyProfitMap[trxTanggal] += ((data.total || 0) - (data.hpp || 0));
 
                         if(data.items) {
@@ -1546,7 +1541,6 @@
                 snapKonsumsi.forEach(docK => { 
                     const dataK = docK.data();
                     totalKonsumsi += dataK.biaya || 0; 
-                    // Kurangi profit bersih harian grafik berdasarkan biaya makan karyawan
                     if(dailyProfitMap[dataK.tanggal] !== undefined) {
                         dailyProfitMap[dataK.tanggal] -= dataK.biaya || 0;
                     }
@@ -1557,7 +1551,6 @@
                 snapOp.forEach(docO => { 
                     const dataO = docO.data();
                     totalOp += dataO.biaya || 0; 
-                    // Kurangi profit bersih harian grafik berdasarkan pengeluaran operasional toko
                     if(dailyProfitMap[dataO.tanggal] !== undefined) {
                         dailyProfitMap[dataO.tanggal] -= dataO.biaya || 0;
                     }
@@ -1567,10 +1560,8 @@
                 let profitBersih = totalOmset - totalHpp - totalKonsumsi - totalOp;
                 document.getElementById('report-profit').innerText = 'Rp ' + profitBersih.toLocaleString();
 
-                // PANGGIL FUNGSI GENERATE GRAFIK TREN
                 renderTrendChart(dailyOmsetMap, dailyProfitMap);
 
-                // Render Top Items
                 const bestSellerEl = document.getElementById('top-best-seller');
                 const slowMovingEl = document.getElementById('top-slow-moving');
                 if(bestSellerEl) bestSellerEl.innerHTML = '';
@@ -1585,7 +1576,6 @@
                     if(slowMovingEl) slowMovingEl.innerHTML += `<li class="py-1 flex justify-between"><span>${idx+1}. ${item.name}</span> <span class="font-bold text-slate-500">${item.qty} Pcs</span></li>`;
                 });
 
-                // Render Absensi Log
                 const absensiList = document.getElementById('absensi-log-list');
                 if(absensiList) {
                     absensiList.innerHTML = '';
@@ -1597,16 +1587,15 @@
             }).catch(err => console.error("Audit dashboard error: ", err));
         }
 
-        // FUNGSI RE-RENDER CHART.JS PREMIUM VERSION
         function renderTrendChart(omsetMap, profitMap) {
-            const ctx = document.getElementById('reportTrendChart').getContext('2d');
+            const canvasEl = document.getElementById('reportTrendChart');
+            if(!canvasEl) return;
+            const ctx = canvasEl.getContext('2d');
             
-            // Urutkan label tanggal secara ascending (maju)
             const sortedDates = Object.keys(omsetMap).sort();
             const omsetChartData = sortedDates.map(date => omsetMap[date]);
             const profitChartData = sortedDates.map(date => profitMap[date]);
 
-            // Transformasikan tampilan format tanggal agar lebih rapi di grafik (misal: 2026-06-01 -> 01 Jun)
             const formattedLabels = sortedDates.map(dateString => {
                 const parts = dateString.split('-');
                 if(parts.length < 3) return dateString;
@@ -1614,12 +1603,10 @@
                 return `${parts[2]} ${months[parseInt(parts[1]) - 1]}`;
             });
 
-            // Hancurkan instance chart lama jika ada filter baru untuk menghindari penumpukan memori canvas
             if (trendChartInstance) {
                 trendChartInstance.destroy();
             }
 
-            // Inisialisasi konfigurasi pembuatan grafik Chart.js baru
             trendChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -1628,7 +1615,7 @@
                         {
                             label: 'Total Omset Penjualan',
                             data: omsetChartData,
-                            borderColor: '#ef4444', // Red 500 Tailwind
+                            borderColor: '#ef4444', 
                             backgroundColor: 'rgba(239, 68, 68, 0.08)',
                             borderWidth: 3,
                             pointBackgroundColor: '#ef4444',
@@ -1639,7 +1626,7 @@
                         {
                             label: 'Keuntungan Bersih',
                             data: profitChartData,
-                            borderColor: '#10b981', // Emerald 500 Tailwind
+                            borderColor: '#10b981', 
                             backgroundColor: 'rgba(16, 185, 129, 0.08)',
                             borderWidth: 3,
                             pointBackgroundColor: '#10b981',
@@ -1783,13 +1770,12 @@
             const hariIni = new Date().toISOString().split('T')[0];
             const bulanIni = hariIni.substring(0, 7);
             
-            // Set default range filter laporan otomatis dari tanggal 1 bulan berjalan sampai hari ini
             const awalBulanIni = `${bulanIni}-01`;
             document.getElementById('filter-start-date').value = awalBulanIni;
             document.getElementById('filter-end-date').value = hariIni;
             
             document.getElementById('op-item-date').value = hariIni;
-            document.getElementById('op-filter-start-date').value = harianStr = hariIni;
+            document.getElementById('op-filter-start-date').value = hariIni;
             document.getElementById('op-filter-end-date').value = hariIni;
             document.getElementById('op-filter-month').value = bulanIni;
             
