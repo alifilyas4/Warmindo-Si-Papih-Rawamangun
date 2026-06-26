@@ -464,7 +464,7 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-gradient-to-br from-slate-700 to-slate-900 p-5 rounded-2xl shadow-sm text-white">
-                        <p class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Total Pendapatan (Semua Shift)</p>
+                        <p class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Total Pendapatan (Terfilter Shift)</p>
                         <h3 class="text-xl font-black mt-1" id="report-pemasukan">Rp 0</h3>
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
@@ -1095,7 +1095,7 @@
             
             batch.set(db.collection("transaksi_history").doc(), {
                 meja: selectedTable, divisi: selectedTableDivisi, items: activeBillItems, total: total, hpp: totalModal, profit: profit,
-                shift: currentShift, tanggal: dateStr, bulan: monthStr, jenisTransaksi: finalPaymentMethodLabel, 
+                shift: String(currentShift), tanggal: dateStr, bulan: monthStr, jenisTransaksi: finalPaymentMethodLabel, 
                 isSplitBill: isSplitBillActive, splitAmount1: splitAmount1, splitMethod1: splitMethod1, splitAmount2: splitAmount2, splitMethod2: splitMethod2,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
@@ -1235,7 +1235,7 @@
                 query = query.where("tanggal", "==", startDate);
             }
 
-            if (filterShift !== "ALL") query = query.where("shift", "==", filterShift);
+            if (filterShift !== "ALL") query = query.where("shift", "==", String(filterShift));
             if (filterDivisi !== "ALL") query = query.where("divisi", "==", filterDivisi);
 
             historyUnsubscribe = query.onSnapshot(snapshot => {
@@ -1330,7 +1330,7 @@
 
             db.collection("operasional").add({
                 nama: nama, biaya: biaya, tanggal: tanggal, bulan: tanggal.substring(0, 7),
-                shift: currentShift, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                shift: String(currentShift), timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 document.getElementById('op-item-name').value = ''; document.getElementById('op-item-cost').value = '';
                 loadOperasionalData();
@@ -1503,12 +1503,14 @@
                     const trxShift = String(data.shift); 
                     const trxTanggal = data.tanggal;
 
+                    // Mengakulmulasikan data murni berdasarkan realita database
                     if (trxShift === "1") {
                         totalShift1 += data.total || 0;
                     } else if (trxShift === "2") {
                         totalShift2 += data.total || 0;
                     }
 
+                    // Saringan visual drop-down shift
                     if (filterShift === "ALL" || trxShift === filterShift) {
                         const div = data.divisi || "Warmindo";
                         if(div === "Rental PS") omsetPS += data.total;
@@ -1540,9 +1542,12 @@
                 let totalKonsumsi = 0;
                 snapKonsumsi.forEach(docK => { 
                     const dataK = docK.data();
-                    totalKonsumsi += dataK.biaya || 0; 
-                    if(dailyProfitMap[dataK.tanggal] !== undefined) {
-                        dailyProfitMap[dataK.tanggal] -= dataK.biaya || 0;
+                    const kShift = String(dataK.shift);
+                    if (filterShift === "ALL" || kShift === filterShift) {
+                        totalKonsumsi += dataK.biaya || 0; 
+                        if(dailyProfitMap[dataK.tanggal] !== undefined) {
+                            dailyProfitMap[dataK.tanggal] -= dataK.biaya || 0;
+                        }
                     }
                 });
                 document.getElementById('report-total-konsumsi').innerText = 'Rp ' + totalKonsumsi.toLocaleString();
@@ -1550,9 +1555,12 @@
                 let totalOp = 0;
                 snapOp.forEach(docO => { 
                     const dataO = docO.data();
-                    totalOp += dataO.biaya || 0; 
-                    if(dailyProfitMap[dataO.tanggal] !== undefined) {
-                        dailyProfitMap[dataO.tanggal] -= dataO.biaya || 0;
+                    const opShift = String(dataO.shift);
+                    if (filterShift === "ALL" || opShift === filterShift) {
+                        totalOp += dataO.biaya || 0; 
+                        if(dailyProfitMap[dataO.tanggal] !== undefined) {
+                            dailyProfitMap[dataO.tanggal] -= dataO.biaya || 0;
+                        }
                     }
                 });
                 document.getElementById('report-total-operasional').innerText = 'Rp ' + totalOp.toLocaleString();
@@ -1581,7 +1589,10 @@
                     absensiList.innerHTML = '';
                     snapAbsen.forEach(docA => {
                         const ab = docA.data();
-                        absensiList.innerHTML += `<li class="p-1 border-b"><b>${ab.nama.toUpperCase()}</b> (${ab.tanggal}) - Jam: <span class="text-amber-600 font-mono">${ab.jamMasuk}</span> [Shift ${ab.shift}]</li>`;
+                        const abShift = String(ab.shift);
+                        if (filterShift === "ALL" || abShift === filterShift) {
+                            absensiList.innerHTML += `<li class="p-1 border-b"><b>${ab.nama.toUpperCase()}</b> (${ab.tanggal}) - Jam: <span class="text-amber-600 font-mono">${ab.jamMasuk}</span> [Shift ${ab.shift}]</li>`;
+                        }
                     });
                 }
             }).catch(err => console.error("Audit dashboard error: ", err));
@@ -1716,13 +1727,13 @@
             batch.update(db.collection("stocks").doc(itemId), { qty: firebase.firestore.FieldValue.increment(-qtyItem) });
             batch.set(db.collection("konsumsi").doc(), {
                 slotKey: selectValue, karyawan: staffLabel, itemId: itemId, namaMenuStr: targetStockItem.namaName, qtyItem: qtyItem,
-                biaya: harga, shift: currentShift, tanggal: dateStr, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                biaya: harga, shift: String(currentShift), tanggal: dateStr, timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
 
             batch.commit().then(() => { 
                 alert('Konsumsi Berhasil Dicatat!'); 
                 document.getElementById('konsumsi-harga').value = '';
-            }).catch(e => alert("Gagal mencatat data konsumsi: " + e.message));
+            }).catch(e => alert("Gagal mencatat data jatah makan: " + e.message));
         }
 
         function listenKonsumsiRealtime() {
