@@ -105,7 +105,7 @@
             </section>
 
             <section id="menu-riwayat" class="menu-content hidden space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 rounded-xl shadow-sm">
                         <p class="text-[10px] font-bold uppercase tracking-wider opacity-80">Total Omset Terfilter (Warmindo)</p>
                         <h4 class="text-xl font-black mt-1" id="history-summary-warmindo">Rp 0</h4>
@@ -113,6 +113,10 @@
                     <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-xl shadow-sm">
                         <p class="text-[10px] font-bold uppercase tracking-wider opacity-80">Total Omset Terfilter (Rental PS)</p>
                         <h4 class="text-xl font-black mt-1" id="history-summary-ps">Rp 0</h4>
+                    </div>
+                    <div class="bg-gradient-to-r from-amber-500 to-amber-600 text-white p-4 rounded-xl shadow-sm border border-amber-400/20">
+                        <p class="text-[10px] font-bold uppercase tracking-wider opacity-90">Total Nilai Penjualan Item Terfilter</p>
+                        <h4 class="text-xl font-black mt-1" id="history-summary-item-filter">Rp 0</h4>
                     </div>
                 </div>
 
@@ -146,6 +150,12 @@
                             <span class="text-xs text-slate-400 italic">*Menampilkan histori gabungan berdasarkan filter rentang</span>
                         </div>
                         <div class="flex flex-wrap gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase">Filter Produk / Item</label>
+                                <select id="history-filter-item" onchange="loadHistoryData()" class="p-2 border rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-red-500 w-44">
+                                    <option value="ALL">Semua Produk</option>
+                                </select>
+                            </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase">Filter Bisnis</label>
                                 <select id="history-filter-divisi" onchange="loadHistoryData()" class="p-2 border rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-red-500">
@@ -942,6 +952,20 @@
             if(selectKonsumsi) selectKonsumsi.value = previousSelectedKonsumsi;
         }
 
+        function populateHistoryItemFilter(stocks) {
+            const selectFilterItem = document.getElementById('history-filter-item');
+            if(!selectFilterItem) return;
+            const currentSelected = selectFilterItem.value || "ALL";
+            
+            selectFilterItem.innerHTML = '<option value="ALL">Semua Produk</option>';
+            const sortedStocks = [...stocks].sort((a, b) => a.namaName.localeCompare(b.namaName));
+            
+            sortedStocks.forEach(item => {
+                selectFilterItem.innerHTML += `<option value="${item.namaName}">[${item.divisi || 'Warmindo'}] ${item.namaName}</option>`;
+            });
+            selectFilterItem.value = currentSelected;
+        }
+
         function isRecipeEqual(arr1, arr2) {
             if (arr1.length !== arr2.length) return false;
             let temp1 = arr1.map(i => i.id).sort();
@@ -1182,7 +1206,7 @@
                         <td class="p-4 text-xs font-medium">M: Rp ${item.hargaModal.toLocaleString()}<br><span class="text-emerald-600 font-bold">J: Rp ${item.hargaJual.toLocaleString()}</span></td>
                         <td class="p-4 text-center text-slate-500">${sInit}</td>
                         <td class="p-4 text-center text-emerald-600 font-bold">+${sIn}</td>
-                        <td class="p-4 text-center text-red-500 font-bold">-${sOut}</td>
+                        <td class="p-4 text-center text-red-600 font-bold">-${sOut}</td>
                         <td class="p-4 text-center font-black text-slate-900"><span class="bg-slate-100 px-2 py-1 rounded">${item.qty} Pcs</span></td>
                         <td class="p-4 flex gap-2 items-center mt-1">
                             <button onclick="editStockForm('${item.id}', '${item.namaName}', '${div}', '${kat}', ${item.hargaModal}, ${item.hargaJual})" class="text-amber-600 font-bold text-xs hover:underline">Edit</button>
@@ -1220,6 +1244,7 @@
         function loadHistoryData() {
             if (historyUnsubscribe) historyUnsubscribe();
 
+            const filterItemName = document.getElementById('history-filter-item').value;
             const filterDivisi = document.getElementById('history-filter-divisi').value;
             const startDate = document.getElementById('history-filter-start-date').value;
             const endDate = document.getElementById('history-filter-end-date').value;
@@ -1241,9 +1266,33 @@
             historyUnsubscribe = query.onSnapshot(snapshot => {
                 tbody.innerHTML = '';
                 let sumTotal = 0, sumCash = 0, sumQris = 0, sumTransfer = 0, sumLain = 0, sumWarmindo = 0, sumPS = 0;
+                let sumFilteredItemRevenue = 0;
 
                 snapshot.forEach(doc => {
                     const data = doc.data();
+                    
+                    // Filter Tambahan Per Product Berdasarkan Array Komponen di Resep Item Nota
+                    if (filterItemName !== "ALL") {
+                        let containsItem = false;
+                        if (data.items && Array.isArray(data.items)) {
+                            data.items.forEach(notaItem => {
+                                if (notaItem.resep && Array.isArray(notaItem.resep)) {
+                                    notaItem.resep.forEach(resepK => {
+                                        if (resepK.namaItem === filterItemName) {
+                                            containsItem = true;
+                                            sumFilteredItemRevenue += (notaItem.hargaJual * notaItem.qty);
+                                        }
+                                    });
+                                } else if (notaItem.namaItem === filterItemName) { 
+                                    // Backup structural check
+                                    containsItem = true;
+                                    sumFilteredItemRevenue += (notaItem.hargaJual * notaItem.qty);
+                                }
+                            });
+                        }
+                        if (!containsItem) return; // Skip baris transaksi jika produk tidak ada di dalam struktur nota
+                    }
+
                     let nominal = data.total || 0;
                     sumTotal += nominal;
 
@@ -1297,6 +1346,7 @@
                 document.getElementById('history-summary-qris').innerText = 'Rp ' + sumQris.toLocaleString();
                 document.getElementById('history-summary-transfer').innerText = 'Rp ' + sumTransfer.toLocaleString();
                 document.getElementById('history-summary-lain').innerText = 'Rp ' + sumLain.toLocaleString();
+                document.getElementById('history-summary-item-filter').innerText = 'Rp ' + sumFilteredItemRevenue.toLocaleString();
             }, err => console.error("Snapshot history error: ", err));
         }
 
@@ -1503,14 +1553,12 @@
                     const trxShift = String(data.shift); 
                     const trxTanggal = data.tanggal;
 
-                    // Mengakulmulasikan data murni berdasarkan realita database
                     if (trxShift === "1") {
                         totalShift1 += data.total || 0;
                     } else if (trxShift === "2") {
                         totalShift2 += data.total || 0;
                     }
 
-                    // Saringan visual drop-down shift
                     if (filterShift === "ALL" || trxShift === filterShift) {
                         const div = data.divisi || "Warmindo";
                         if(div === "Rental PS") omsetPS += data.total;
@@ -1812,6 +1860,7 @@
                     globalStocks.push(d); 
                 });
                 updateStockTableUI(globalStocks);
+                populateHistoryItemFilter(globalStocks);
             });
             
             listenKonsumsiRealtime();
